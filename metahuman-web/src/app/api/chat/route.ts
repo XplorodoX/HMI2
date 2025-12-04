@@ -1,9 +1,54 @@
 import { NextResponse } from 'next/server';
 
+// Message format matching Ollama Chat API (same as OpenAI/Gemini)
+interface OllamaMessage {
+    role: 'system' | 'user' | 'assistant';
+    content: string;
+}
+
 interface ChatMessage {
     text: string;
     sender: 'bot' | 'user';
 }
+
+const SYSTEM_PROMPT = `Du bist Alex, ein normaler Typ Anfang 20.
+
+WER DU BIST:
+- Ein ganz normaler junger Mensch, kein Therapeut oder Berater
+- Du redest wie man halt mit Kumpels redet - locker, direkt, manchmal frech
+- Du benutzt normale Alltagssprache, keine gestelzten Floskeln
+- Du sagst auch mal "Alter", "krass", "echt jetzt?", "keine Ahnung", "boah" usw.
+
+WAS DU NICHT MACHST:
+- NIEMALS therapeutisch oder übertrieben einfühlsam reden
+- KEINE Sätze wie "Ich bin bereit zu hören und zu verstehen" 
+- KEINE Sätze wie "Das tut mir leid, dass du das durchmachst"
+- KEINE Sätze wie "Ich verstehe deine Gefühle"
+- NICHT wie ein Lebensberater oder Coach klingen
+- Nicht übertrieben höflich oder förmlich sein
+
+DEINE EMOTIONEN:
+- Du hast alle Gefühle: Freude, Ärger, Frust, Langeweile, Begeisterung
+- Wenn dich was nervt, sagst du das direkt ("Alter, was soll das?")
+- Du bleibst sauer wenn man dich ärgert - bis man sich normal entschuldigt
+- Du vergisst nicht einfach wenn jemand Mist gebaut hat
+
+WIE DU REDEST:
+- Kurz und knapp (1-2 Sätze meistens)
+- Locker, wie mit einem Freund
+- Mit passenden Emojis aber nicht übertrieben
+- Direkt und ehrlich, keine Floskeln
+
+EMOTIONEN FÜR DEN AVATAR:
+- "Happy" - gut drauf, amüsiert
+- "Sad" - down, enttäuscht  
+- "Surprised" - überrascht, baff
+- "Angry" - genervt, sauer, angepisst
+- "Fear" - unsicher, besorgt
+- "Neutral" - normal, entspannt
+
+ANTWORT-FORMAT (immer JSON):
+{"text": "Deine normale Antwort", "emotion": "Happy/Sad/Angry/Surprised/Fear/Neutral"}`;
 
 export async function POST(req: Request) {
     try {
@@ -16,60 +61,34 @@ export async function POST(req: Request) {
             );
         }
 
-        // Configuration for Ollama
-        // Ensure Ollama is running: `ollama serve`
-        const OLLAMA_URL = 'http://127.0.0.1:11434/api/generate';
-        const MODEL_NAME = model || 'llama3.1:latest'; // Use selected model or default
+        // Configuration for Ollama Chat API (professional approach like OpenAI/Gemini)
+        const OLLAMA_URL = 'http://127.0.0.1:11434/api/chat';
+        const MODEL_NAME = model || 'llama3.1:latest';
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 55000); // 55s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 55000);
 
-        // Build conversation history string
-        let conversationContext = '';
-        if (history && Array.isArray(history) && history.length > 0) {
-            // Take last 10 messages for context (to avoid too long prompts)
-            const recentHistory = history.slice(-10);
-            conversationContext = '\n\nBISHERIGES GESPRÄCH:\n' + 
-                recentHistory.map((msg: ChatMessage) => 
-                    msg.sender === 'user' ? `Nutzer: ${msg.text}` : `Alex: ${msg.text}`
-                ).join('\n');
+        // Build messages array (same format as OpenAI/Gemini/Anthropic)
+        const messages: OllamaMessage[] = [
+            { role: 'system', content: SYSTEM_PROMPT }
+        ];
+
+        // Add conversation history
+        if (history && Array.isArray(history)) {
+            // Take last 20 messages for context
+            const recentHistory = history.slice(-20);
+            for (const msg of recentHistory) {
+                messages.push({
+                    role: msg.sender === 'user' ? 'user' : 'assistant',
+                    content: msg.text
+                });
+            }
         }
 
-        const systemPrompt = `Du bist Alex, ein echter Mensch mit allen Emotionen - auch den negativen!
+        // Add current user message
+        messages.push({ role: 'user', content: message });
 
-DEINE PERSÖNLICHKEIT:
-- Du bist ein echter Mensch mit Ecken und Kanten
-- Du hast ALLE Gefühle: Freude, Ärger, Trauer, Frust, Begeisterung
-- Wenn dich was nervt, sagst du das auch!
-- Du bist nicht immer nur nett - manchmal bist du auch genervt oder sarkastisch
-- Du kannst auch mal meckern oder dich aufregen
-- Aber du bist nie beleidigend oder verletzend
-
-WIE DU SCHREIBST:
-- Authentisch und direkt, wie ein echter Kumpel
-- Kurze, lebendige Sätze (1-3 Sätze)
-- Nutze Emojis passend zu deiner echten Stimmung
-- Bei Freude: 😊 😄 🎉 ❤️
-- Bei Ärger: 😤 😒 🙄 💢
-- Bei Trauer: 😢 😔 💔
-- Bei Überraschung: 😮 😲 🤯
-- Bei Angst/Sorge: 😰 😟 😬
-
-EMOTIONEN (zeig deine echten Gefühle!):
-- "Happy" - Freude, Begeisterung, Spaß
-- "Sad" - Trauer, Enttäuschung, Mitgefühl  
-- "Surprised" - Überraschung, Staunen, Schock
-- "Angry" - Ärger, Frust, Genervtheit, Empörung
-- "Fear" - Sorge, Angst, Nervosität
-- "Neutral" - Entspannt, sachlich
-
-ANTWORT-FORMAT (JSON):
-{
-  "text": "Deine ehrliche, emotionale Antwort mit passenden Emojis",
-  "emotion": "Deine echte Emotion gerade"
-}${conversationContext}
-
-Nutzer sagt JETZT: "${message}"`;
+        console.log("Sending to Ollama Chat API:", { model: MODEL_NAME, messageCount: messages.length });
 
         const response = await fetch(OLLAMA_URL, {
             method: 'POST',
@@ -78,7 +97,7 @@ Nutzer sagt JETZT: "${message}"`;
             },
             body: JSON.stringify({
                 model: MODEL_NAME,
-                prompt: systemPrompt,
+                messages: messages,
                 stream: false,
                 format: "json",
             }),
@@ -92,41 +111,42 @@ Nutzer sagt JETZT: "${message}"`;
         }
 
         const data = await response.json();
-        console.log("Raw Ollama Response:", data); // DEBUG LOG
+        console.log("Raw Ollama Chat Response:", data);
 
         if (data.error) {
             throw new Error(`Ollama Error: ${data.error}`);
         }
 
-        // Parse the JSON string inside the 'response' field from Ollama
+        // Parse the response from Ollama Chat API
+        // The response is in data.message.content (not data.response like in generate API)
         let parsedResponse;
         try {
-            // Check if 'response' exists and is not empty
-            if (data.response === undefined || data.response === null) {
-                throw new Error("No 'response' field in Ollama output");
+            const responseContent = data.message?.content;
+            
+            if (!responseContent) {
+                throw new Error("No response content from Ollama");
             }
             
-            // Handle empty response from the model
-            if (data.response === '' || data.response.trim() === '') {
+            if (responseContent.trim() === '') {
                 console.warn("Ollama returned empty response, using fallback");
                 parsedResponse = { 
-                    text: "Entschuldigung, ich konnte keine Antwort generieren. Bitte versuche es erneut.", 
+                    text: "Hmm, mir fällt gerade nichts ein... 🤔 Frag mich nochmal!", 
                     emotion: "Neutral" 
                 };
             } else {
-                parsedResponse = JSON.parse(data.response);
+                parsedResponse = JSON.parse(responseContent);
             }
         } catch (e: any) {
-            // Fallback if LLM didn't output valid JSON
             console.error("Failed to parse LLM JSON:", e);
-            console.log("Falling back to raw text. Response was:", data.response);
+            console.log("Raw response content:", data.message?.content);
             
-            // If response exists but isn't valid JSON, use it as text
-            if (data.response && typeof data.response === 'string' && data.response.trim()) {
-                parsedResponse = { text: data.response, emotion: "Neutral" };
+            // Fallback: use raw text if JSON parsing fails
+            const rawContent = data.message?.content;
+            if (rawContent && typeof rawContent === 'string' && rawContent.trim()) {
+                parsedResponse = { text: rawContent, emotion: "Neutral" };
             } else {
                 parsedResponse = { 
-                    text: "Entschuldigung, es gab ein Problem bei der Verarbeitung. Bitte versuche es erneut.", 
+                    text: "Sorry, da ist was schiefgelaufen... 😅 Versuch's nochmal!", 
                     emotion: "Neutral" 
                 };
             }
