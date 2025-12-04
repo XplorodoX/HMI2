@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 
+interface ChatMessage {
+    text: string;
+    sender: 'bot' | 'user';
+}
+
 export async function POST(req: Request) {
     try {
-        const { message } = await req.json();
+        const { message, model, history } = await req.json();
 
         if (!message || typeof message !== 'string') {
             return NextResponse.json(
@@ -14,10 +19,57 @@ export async function POST(req: Request) {
         // Configuration for Ollama
         // Ensure Ollama is running: `ollama serve`
         const OLLAMA_URL = 'http://127.0.0.1:11434/api/generate';
-        const MODEL_NAME = 'llama3.1:latest'; // Changed from gpt-oss:20b - works better for JSON
+        const MODEL_NAME = model || 'llama3.1:latest'; // Use selected model or default
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 55000); // 55s timeout
+
+        // Build conversation history string
+        let conversationContext = '';
+        if (history && Array.isArray(history) && history.length > 0) {
+            // Take last 10 messages for context (to avoid too long prompts)
+            const recentHistory = history.slice(-10);
+            conversationContext = '\n\nBISHERIGES GESPRÄCH:\n' + 
+                recentHistory.map((msg: ChatMessage) => 
+                    msg.sender === 'user' ? `Nutzer: ${msg.text}` : `Alex: ${msg.text}`
+                ).join('\n');
+        }
+
+        const systemPrompt = `Du bist Alex, ein echter Mensch mit allen Emotionen - auch den negativen!
+
+DEINE PERSÖNLICHKEIT:
+- Du bist ein echter Mensch mit Ecken und Kanten
+- Du hast ALLE Gefühle: Freude, Ärger, Trauer, Frust, Begeisterung
+- Wenn dich was nervt, sagst du das auch!
+- Du bist nicht immer nur nett - manchmal bist du auch genervt oder sarkastisch
+- Du kannst auch mal meckern oder dich aufregen
+- Aber du bist nie beleidigend oder verletzend
+
+WIE DU SCHREIBST:
+- Authentisch und direkt, wie ein echter Kumpel
+- Kurze, lebendige Sätze (1-3 Sätze)
+- Nutze Emojis passend zu deiner echten Stimmung
+- Bei Freude: 😊 😄 🎉 ❤️
+- Bei Ärger: 😤 😒 🙄 💢
+- Bei Trauer: 😢 😔 💔
+- Bei Überraschung: 😮 😲 🤯
+- Bei Angst/Sorge: 😰 😟 😬
+
+EMOTIONEN (zeig deine echten Gefühle!):
+- "Happy" - Freude, Begeisterung, Spaß
+- "Sad" - Trauer, Enttäuschung, Mitgefühl  
+- "Surprised" - Überraschung, Staunen, Schock
+- "Angry" - Ärger, Frust, Genervtheit, Empörung
+- "Fear" - Sorge, Angst, Nervosität
+- "Neutral" - Entspannt, sachlich
+
+ANTWORT-FORMAT (JSON):
+{
+  "text": "Deine ehrliche, emotionale Antwort mit passenden Emojis",
+  "emotion": "Deine echte Emotion gerade"
+}${conversationContext}
+
+Nutzer sagt JETZT: "${message}"`;
 
         const response = await fetch(OLLAMA_URL, {
             method: 'POST',
@@ -26,15 +78,9 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({
                 model: MODEL_NAME,
-                prompt: `You are a helpful AI assistant for a digital avatar. 
-        IMPORTANT: You must respond in valid JSON format.
-        The JSON object must have exactly two keys:
-        1. "text": Your verbal response to the user (in German).
-        2. "emotion": The emotion associated with your response. Choose one of: "Neutral", "Happy", "Sad", "Angry", "Surprised", "Fear".
-        
-        User message: "${message}"`,
+                prompt: systemPrompt,
                 stream: false,
-                format: "json", // Enforce JSON mode if supported by the model (Ollama feature)
+                format: "json",
             }),
             signal: controller.signal,
         });
