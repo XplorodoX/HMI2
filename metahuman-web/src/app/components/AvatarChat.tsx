@@ -6,6 +6,7 @@ interface Message {
     id: number;
     text: string;
     sender: 'bot' | 'user';
+    emotion?: 'neutral' | 'happy' | 'sad' | 'angry' | 'surprised' | 'thinking';
 }
 
 interface ChatSession {
@@ -23,7 +24,7 @@ const AvatarChat = () => {
     const [showSidebar, setShowSidebar] = useState(false);
     
     const [messages, setMessages] = useState<Message[]>([
-        { id: 1, text: "Hey! 👋 Was geht?", sender: 'bot' }
+        { id: 1, text: "Hey! 👋 Was geht?", sender: 'bot', emotion: 'happy' }
     ]);
     const [inputText, setInputText] = useState("");
     const [models, setModels] = useState<string[]>([]);
@@ -61,13 +62,23 @@ const AvatarChat = () => {
         }
     }, [messages, currentSessionId, selectedModel]);
 
-    // Fetch available models on mount
+    // Fetch available models on mount and check Ollama status
     useEffect(() => {
         const fetchModels = async () => {
             try {
                 const response = await fetch('/api/models');
                 const data = await response.json();
-                if (data.models && data.models.length > 0) {
+                
+                if (data.error || !data.models || data.models.length === 0) {
+                    // Ollama nicht verfügbar - zeige Info-Nachricht (angry emotion)
+                    setMessages([{
+                        id: 1,
+                        text: "⚠️ Ollama ist gerade nicht erreichbar. Bitte starte Ollama mit 'ollama serve' im Terminal und lade die Seite neu.",
+                        sender: 'bot',
+                        emotion: 'angry'
+                    }]);
+                    setModels([]);
+                } else {
                     setModels(data.models);
                     if (data.models.includes('llama3.1:latest')) {
                         setSelectedModel('llama3.1:latest');
@@ -77,6 +88,14 @@ const AvatarChat = () => {
                 }
             } catch (error) {
                 console.error('Failed to fetch models:', error);
+                // Zeige freundliche Nachricht statt Fehler (angry emotion)
+                setMessages([{
+                    id: 1,
+                    text: "⚠️ Konnte keine Verbindung zu Ollama herstellen. Stelle sicher, dass Ollama läuft ('ollama serve') und lade dann die Seite neu.",
+                    sender: 'bot',
+                    emotion: 'angry'
+                }]);
+                setModels([]);
             } finally {
                 setIsLoadingModels(false);
             }
@@ -116,7 +135,7 @@ const AvatarChat = () => {
         
         // Reset to new chat
         setCurrentSessionId(null);
-        setMessages([{ id: 1, text: "Hey! 👋 Was geht?", sender: 'bot' }]);
+        setMessages([{ id: 1, text: "Hey! 👋 Was geht?", sender: 'bot', emotion: 'happy' }]);
         setShowSidebar(false);
     };
 
@@ -200,7 +219,12 @@ const AvatarChat = () => {
             }
 
             const data = await response.json();
-            const newBotMsg: Message = { id: Date.now() + 1, text: data.text, sender: 'bot' };
+            const newBotMsg: Message = { 
+                id: Date.now() + 1, 
+                text: data.text, 
+                sender: 'bot',
+                emotion: data.emotion || 'neutral'
+            };
             setMessages(prev => [...prev, newBotMsg]);
 
             console.log("Avatar Emotion:", data.emotion);
