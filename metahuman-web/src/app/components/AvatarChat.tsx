@@ -26,6 +26,7 @@ const AvatarChat = () => {
     const handleSendMessage = async () => {
         if (!inputText.trim()) return;
 
+        const userMessage = inputText;
         // Add User Message
         const newUserMsg: Message = { id: Date.now(), text: inputText, sender: 'user' };
         setMessages(prev => [...prev, newUserMsg]);
@@ -33,31 +34,46 @@ const AvatarChat = () => {
 
         // Call the API
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout for LLM
+
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: inputText }),
+                body: JSON.stringify({ message: userMessage }),
+                signal: controller.signal,
             });
 
-            const data = await response.json();
+            clearTimeout(timeoutId);
 
-            if (response.ok) {
-                const newBotMsg: Message = { id: Date.now() + 1, text: data.text, sender: 'bot' };
-                setMessages(prev => [...prev, newBotMsg]);
-
-                // Log emotion for now (later: send to Unreal)
-                console.log("Avatar Emotion:", data.emotion);
-
-                // Example: If we had the pixel streaming instance, we would do:
-                // pixelStreaming.emitUIInteraction({ type: 'SetEmotion', value: data.emotion });
-            } else {
-                console.error("API Error:", data.error);
-                const errorMsg: Message = { id: Date.now() + 1, text: "Fehler: Konnte KI nicht erreichen.", sender: 'bot' };
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: response.statusText }));
+                console.error("API Error:", errorData.error || response.statusText);
+                const errorMsg: Message = { id: Date.now() + 1, text: `Fehler: ${errorData.error || 'Konnte KI nicht erreichen.'}`, sender: 'bot' };
                 setMessages(prev => [...prev, errorMsg]);
+                return;
             }
+
+            const data = await response.json();
+            const newBotMsg: Message = { id: Date.now() + 1, text: data.text, sender: 'bot' };
+            setMessages(prev => [...prev, newBotMsg]);
+
+            // Log emotion for now (later: send to Unreal)
+            console.log("Avatar Emotion:", data.emotion);
+
+            // Example: If we had the pixel streaming instance, we would do:
+            // pixelStreaming.emitUIInteraction({ type: 'SetEmotion', value: data.emotion });
         } catch (error) {
             console.error("Network Error:", error);
-            const errorMsg: Message = { id: Date.now() + 1, text: "Netzwerkfehler.", sender: 'bot' };
+            let errorText = "Netzwerkfehler.";
+            if (error instanceof Error) {
+                if (error.name === 'AbortError') {
+                    errorText = "Zeitüberschreitung: Die Anfrage hat zu lange gedauert.";
+                } else {
+                    errorText = `Fehler: ${error.message}`;
+                }
+            }
+            const errorMsg: Message = { id: Date.now() + 1, text: errorText, sender: 'bot' };
             setMessages(prev => [...prev, errorMsg]);
         }
     };
