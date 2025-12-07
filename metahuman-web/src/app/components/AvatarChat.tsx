@@ -361,7 +361,7 @@ const AvatarChat = () => {
             <div className="stream-panel">
                 <div className="overlay-info">Live Stream via Unreal Engine</div>
                 <iframe
-                    src="http://localhost"
+                    src="http://localhost/?AutoConnect=true&WaitForStreamer=false&MatchViewportRes=true&HoveringMouse=true&LightMode=false&MouseInput=true&KeyboardInput=true&AutoPlayVideo=true&ForceTURN=false"
                     className="stream-iframe"
                     allow="autoplay; microphone; camera; fullscreen"
                     title="MetaHuman Stream"
