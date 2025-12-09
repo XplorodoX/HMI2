@@ -58,7 +58,8 @@ const PixelStreamingPlayer = forwardRef<PixelStreamingPlayerRef, {}>((props, ref
                         }
                     });
                 } else if (PS.ConfigUI) {
-                    config = new PS.ConfigUI({
+                    // ConfigUI expects an object with a getFlags method. Provide a minimal stub if missing.
+                    const configUIOptions: any = {
                         initialSettings: {
                             AutoPlayVideo: true,
                             AutoConnect: true,
@@ -66,7 +67,13 @@ const PixelStreamingPlayer = forwardRef<PixelStreamingPlayerRef, {}>((props, ref
                             HoveringMouse: true,
                             WaitForStreamer: true,
                         }
-                    });
+                    };
+                    if (typeof PS.ConfigUI.prototype.getFlags === 'function' || typeof PS.ConfigUI.getFlags === 'function') {
+                        config = new PS.ConfigUI(configUIOptions);
+                    } else {
+                        // Fallback: use Config if ConfigUI is not compatible
+                        config = new PS.Config(configUIOptions);
+                    }
                 } else {
                     console.warn('Pixel Streaming Config class not found; skipping initialization.');
                 }

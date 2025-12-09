@@ -45,20 +45,18 @@ export async function POST(req: Request) {
             });
         }
 
-        // 2. Get Audio from /tts (Streaming)
+        // 2. Get Audio from Edge TTS (returns MP3)
         let audioBase64 = null;
         if (chatResponseData.text) {
             try {
-                console.log("Requesting TTS Stream...");
+                console.log("Requesting Edge TTS...");
                 const ttsResponse = await fetch(`${API_BASE_URL}/tts`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         text: chatResponseData.text,
                         language: 'de',
-                        emotion: chatResponseData.emotion ? chatResponseData.emotion.toLowerCase() : 'neutral',
-                        temperature: 0.7, // Cleaner voice
-                        speed: 1.0
+                        emotion: chatResponseData.emotion ? chatResponseData.emotion.toLowerCase() : 'neutral'
                     })
                 });
 
@@ -66,7 +64,7 @@ export async function POST(req: Request) {
                     const audioBuffer = await ttsResponse.arrayBuffer();
                     if (audioBuffer.byteLength > 0) {
                         audioBase64 = Buffer.from(audioBuffer).toString('base64');
-                        console.log(`Received Audio Stream: ${audioBuffer.byteLength} bytes`);
+                        console.log(`✅ Received Edge TTS Audio: ${audioBuffer.byteLength} bytes`);
                     }
                 } else {
                     console.error("TTS API error:", await ttsResponse.text());
