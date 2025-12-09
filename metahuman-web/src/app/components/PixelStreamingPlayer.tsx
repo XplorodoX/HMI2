@@ -43,68 +43,68 @@ const PixelStreamingPlayer = forwardRef<PixelStreamingPlayerRef, {}>((props, ref
                 // Import as any
                 const PS: any = await import('@epicgames-ps/lib-pixelstreamingfrontend-ui-ue5.4');
 
-                // Config usually expects an object
-                // We use 'any' to suppress "Config does not exist"
-                // Defensive Config initialization
+                console.log("PS library exports:", Object.keys(PS));
+
+                // Try to find a working config constructor
                 let config: any = null;
-                if (PS.Config) {
-                    config = new PS.Config({
-                        initialSettings: {
-                            AutoPlayVideo: true,
-                            AutoConnect: true,
-                            StartVideoMuted: true,
-                            HoveringMouse: true,
-                            WaitForStreamer: true,
-                        }
-                    });
-                } else if (PS.ConfigUI) {
-                    // ConfigUI expects an object with a getFlags method. Provide a minimal stub if missing.
-                    const configUIOptions: any = {
-                        initialSettings: {
-                            AutoPlayVideo: true,
-                            AutoConnect: true,
-                            StartVideoMuted: true,
-                            HoveringMouse: true,
-                            WaitForStreamer: true,
-                        }
-                    };
-                    if (typeof PS.ConfigUI.prototype.getFlags === 'function' || typeof PS.ConfigUI.getFlags === 'function') {
-                        config = new PS.ConfigUI(configUIOptions);
-                    } else {
-                        // Fallback: use Config if ConfigUI is not compatible
-                        config = new PS.Config(configUIOptions);
+                const configOptions = {
+                    initialSettings: {
+                        AutoPlayVideo: true,
+                        AutoConnect: true,
+                        StartVideoMuted: true,
+                        HoveringMouse: true,
+                        WaitForStreamer: true,
                     }
-                } else {
-                    console.warn('Pixel Streaming Config class not found; skipping initialization.');
+                };
+
+                // Try different config classes
+                const ConfigClass = PS.Config || PS.ConfigUI || PS.default?.Config;
+                if (ConfigClass && typeof ConfigClass === 'function') {
+                    try {
+                        config = new ConfigClass(configOptions);
+                    } catch (configErr) {
+                        console.warn('Config constructor failed, trying without options:', configErr);
+                        try {
+                            config = new ConfigClass();
+                        } catch (e2) {
+                            console.warn('Config creation failed entirely:', e2);
+                        }
+                    }
                 }
 
-                // Check for PixelStreaming class or similar
-                let stream: any = null;
-                if (config) {
-                    const StreamClass = PS.PixelStreaming;
-                    stream = new StreamClass(config);
-                } else {
-                    console.warn('Config not available; cannot create PixelStreaming stream.');
+                if (!config) {
+                    console.warn('Pixel Streaming: No valid config, skipping. Unreal Engine may not be running.');
+                    return;
                 }
+
+                // Create stream
+                const StreamClass = PS.PixelStreaming || PS.default?.PixelStreaming;
+                if (!StreamClass) {
+                    console.warn('PixelStreaming class not found');
+                    return;
+                }
+
+                const stream = new StreamClass(config);
 
                 // Application wrapper
-                const AppClass = PS.Application;
-                const application = new AppClass({
-                    stream: stream,
-                    onColorModeChanged: (isLightMode: boolean) => { },
-                    settingsPanelConfig: { visibility: false } // Use 'any' if strict check fails
-                } as any);
+                const AppClass = PS.Application || PS.default?.Application;
+                if (AppClass) {
+                    const application = new AppClass({
+                        stream: stream,
+                        onColorModeChanged: () => { },
+                        settingsPanelConfig: { visibility: false }
+                    } as any);
 
-                if (videoParentRef.current) {
-                    videoParentRef.current.appendChild(application.rootElement);
+                    if (videoParentRef.current) {
+                        videoParentRef.current.appendChild(application.rootElement);
+                    }
                 }
 
-                // Store the stream or application for later use
                 setPsInstance(stream);
                 setIsLoaded(true);
 
             } catch (error) {
-                console.error("Failed to load Pixel Streaming library:", error);
+                console.warn("Pixel Streaming not available (Unreal Engine may not be running):", error);
             }
         };
 
