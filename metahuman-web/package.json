@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@epicgames-ps/lib-pixelstreamingfrontend-ui-ue5.4": "^1.0.6",
     "next": "16.0.7",
     "react": "19.2.0",
     "react-dom": "19.2.0"

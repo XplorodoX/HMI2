@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import PixelStreamingPlayer, { PixelStreamingPlayerRef } from './PixelStreamingPlayer';
 
 interface Message {
     id: number;
     text: string;
     sender: 'bot' | 'user';
     emotion?: 'neutral' | 'happy' | 'sad' | 'angry' | 'surprised' | 'thinking';
+    audio?: string;
 }
 
 interface ChatSession {
@@ -22,7 +24,7 @@ const AvatarChat = () => {
     const [sessions, setSessions] = useState<ChatSession[]>([]);
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
     const [showSidebar, setShowSidebar] = useState(false);
-    
+
     const [messages, setMessages] = useState<Message[]>([
         { id: 1, text: "Hey! 👋 Was geht?", sender: 'bot', emotion: 'happy' }
     ]);
@@ -31,6 +33,7 @@ const AvatarChat = () => {
     const [selectedModel, setSelectedModel] = useState<string>('llama3.1:latest');
     const [isLoadingModels, setIsLoadingModels] = useState(true);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
+    const psRef = useRef<PixelStreamingPlayerRef>(null);
 
     // Load sessions from localStorage on mount
     useEffect(() => {
@@ -54,8 +57,8 @@ const AvatarChat = () => {
     // Auto-save current chat to session
     useEffect(() => {
         if (currentSessionId && messages.length > 1) {
-            setSessions(prev => prev.map(session => 
-                session.id === currentSessionId 
+            setSessions(prev => prev.map(session =>
+                session.id === currentSessionId
                     ? { ...session, messages, model: selectedModel }
                     : session
             ));
@@ -68,9 +71,8 @@ const AvatarChat = () => {
             try {
                 const response = await fetch('/api/models');
                 const data = await response.json();
-                
+
                 if (data.error || !data.models || data.models.length === 0) {
-                    // Ollama nicht verfügbar - zeige Info-Nachricht (angry emotion)
                     setMessages([{
                         id: 1,
                         text: "⚠️ Ollama ist gerade nicht erreichbar. Bitte starte Ollama mit 'ollama serve' im Terminal und lade die Seite neu.",
@@ -88,7 +90,6 @@ const AvatarChat = () => {
                 }
             } catch (error) {
                 console.error('Failed to fetch models:', error);
-                // Zeige freundliche Nachricht statt Fehler (angry emotion)
                 setMessages([{
                     id: 1,
                     text: "⚠️ Konnte keine Verbindung zu Ollama herstellen. Stelle sicher, dass Ollama läuft ('ollama serve') und lade dann die Seite neu.",
@@ -103,7 +104,7 @@ const AvatarChat = () => {
         fetchModels();
     }, []);
 
-    // Auto-scroll to bottom - only within chat messages container
+    // Auto-scroll to bottom
     useEffect(() => {
         if (messagesContainerRef.current) {
             messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
@@ -120,7 +121,6 @@ const AvatarChat = () => {
 
     // Start new chat
     const startNewChat = () => {
-        // Save current chat if it has messages
         if (messages.length > 1 && !currentSessionId) {
             const userMsg = messages.find(m => m.sender === 'user');
             const newSession: ChatSession = {
@@ -132,8 +132,7 @@ const AvatarChat = () => {
             };
             setSessions(prev => [newSession, ...prev]);
         }
-        
-        // Reset to new chat
+
         setCurrentSessionId(null);
         setMessages([{ id: 1, text: "Hey! 👋 Was geht?", sender: 'bot', emotion: 'happy' }]);
         setShowSidebar(false);
@@ -141,7 +140,6 @@ const AvatarChat = () => {
 
     // Load a session
     const loadSession = (session: ChatSession) => {
-        // Save current unsaved chat first
         if (messages.length > 1 && !currentSessionId) {
             const userMsg = messages.find(m => m.sender === 'user');
             const newSession: ChatSession = {
@@ -153,7 +151,7 @@ const AvatarChat = () => {
             };
             setSessions(prev => [newSession, ...prev]);
         }
-        
+
         setCurrentSessionId(session.id);
         setMessages(session.messages);
         setSelectedModel(session.model);
@@ -178,7 +176,6 @@ const AvatarChat = () => {
         setMessages(updatedMessages);
         setInputText("");
 
-        // Create session on first user message if none exists
         if (!currentSessionId && messages.length === 1) {
             const newSession: ChatSession = {
                 id: Date.now().toString(),
@@ -196,14 +193,14 @@ const AvatarChat = () => {
             const timeoutId = setTimeout(() => controller.abort(), 60000);
 
             const chatHistory = messages.map(msg => ({ text: msg.text, sender: msg.sender }));
-            
+
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    message: userMessage, 
+                body: JSON.stringify({
+                    message: userMessage,
                     model: selectedModel,
-                    history: chatHistory 
+                    history: chatHistory
                 }),
                 signal: controller.signal,
             });
@@ -219,13 +216,33 @@ const AvatarChat = () => {
             }
 
             const data = await response.json();
-            const newBotMsg: Message = { 
-                id: Date.now() + 1, 
-                text: data.text, 
+            const newBotMsg: Message = {
+                id: Date.now() + 1,
+                text: data.text,
                 sender: 'bot',
-                emotion: data.emotion || 'neutral'
+                emotion: data.emotion || 'neutral',
+                audio: data.audio
             };
             setMessages(prev => [...prev, newBotMsg]);
+
+            if (data.audio) {
+                try {
+                    const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
+                    await audio.play();
+
+                    // Send to Unreal Engine for lipsync
+                    if (psRef.current) {
+                        psRef.current.emitUIInteraction({
+                            type: 'audio_response',
+                            audio: data.audio,
+                            text: data.text,
+                            emotion: data.emotion
+                        });
+                    }
+                } catch (e) {
+                    console.error("Failed to play audio or send to UE:", e);
+                }
+            }
 
             console.log("Avatar Emotion:", data.emotion);
         } catch (error) {
@@ -251,7 +268,7 @@ const AvatarChat = () => {
         const now = new Date();
         const diff = now.getTime() - date.getTime();
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        
+
         if (days === 0) return 'Heute';
         if (days === 1) return 'Gestern';
         if (days < 7) return `Vor ${days} Tagen`;
@@ -274,8 +291,8 @@ const AvatarChat = () => {
                         <div className="no-sessions">Keine gespeicherten Chats</div>
                     ) : (
                         sessions.map(session => (
-                            <div 
-                                key={session.id} 
+                            <div
+                                key={session.id}
                                 className={`session-item ${session.id === currentSessionId ? 'active' : ''}`}
                                 onClick={() => loadSession(session)}
                             >
@@ -283,7 +300,7 @@ const AvatarChat = () => {
                                     <span className="session-title">{session.title}</span>
                                     <span className="session-date">{formatDate(session.createdAt)}</span>
                                 </div>
-                                <button 
+                                <button
                                     className="delete-session"
                                     onClick={(e) => deleteSession(session.id, e)}
                                 >
@@ -359,13 +376,8 @@ const AvatarChat = () => {
 
             {/* Right Side: Stream */}
             <div className="stream-panel">
-                <div className="overlay-info">Live Stream via Unreal Engine</div>
-                <iframe
-                    src="http://localhost"
-                    className="stream-iframe"
-                    allow="autoplay; microphone; camera; fullscreen"
-                    title="MetaHuman Stream"
-                />
+                <div className="overlay-info" style={{ pointerEvents: 'none' }}>Pixel Streaming Live</div>
+                <PixelStreamingPlayer ref={psRef} />
             </div>
         </div>
     );
