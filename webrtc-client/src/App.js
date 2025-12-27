@@ -1,4 +1,16 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  Box,
+  Grid,
+  Card,
+  CardHeader,
+  CardContent,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  Typography
+} from "@mui/material";
 
 function App() {
   const videoRef = useRef(null);
@@ -147,128 +159,139 @@ function App() {
     );
   }*/
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         display: "flex",
-        gap: 20,
-        padding: 20,
-        fontFamily: "sans-serif",
+        gap: 2.5,              // ≈ 20px
+        p: 2.5,
         height: "100vh",
         boxSizing: "border-box"
       }}
     >
-      {/* left Container */}
-      <div
-        style={{
+      {/* left Card Container */}
+      <Card
+        sx={{
           flex: 2,
           display: "flex",
           flexDirection: "column",
-          border: "1px solid lightgray",
-          borderRadius: 8,
-          padding: 16
+          borderRadius: 1
         }}
+        variant="outlined"
       >
-        <h2>Chat</h2>
-
-        <div
-          style={{
+        <CardContent
+          sx={{
             flex: 1,
-            overflowY: "auto",
-            border: "1px solid gray",
-            borderRadius: 6,
-            padding: 10,
-            marginBottom: 10
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            p: 2
           }}
         >
-          {/* Chat Messages */}
-        </div>
+          <Typography variant="h6">Chat</Typography>
 
-        <div style={{ display: "flex" }}>
-          <input
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="Type a message..."
-            onKeyDown={(e) => e.key === "Enter" && send_message()}
-            style={{ padding: 8, flex: 1 }}
-          />
-          <button
-            onClick={send_message}
-            style={{ padding: "8px 16px", marginLeft: 8 }}
+          <Box
+            sx={{
+              flex: 1,
+              border: "1px solid",
+              borderColor: "grey.500",
+              borderRadius: 1,
+              p: 1.25,
+              overflowY: "auto"
+            }}
           >
-            Send
-          </button>
-        </div>
-      </div>
+            {/* Chat Messages */}
+          </Box>
 
-      {/* right Container */}
-      <div
-        style={{
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Type a message..."
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && send_message()}
+            />
+            <Button variant="contained" onClick={send_message}>
+              Send
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* right Card Container */}
+      <Card
+        sx={{
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          border: "1px solid lightgray",
-          borderRadius: 8,
-          padding: 16
+          borderRadius: 1
         }}
+        variant="outlined"
       >
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            marginBottom: 12
-          }}
-        >
-
-
-          <h2 style={{ textAlign: "center" }}>Unity WebRTC Stream</h2>
-
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            style={{
-              width: "92%",
-              aspectRatio: "5 / 5",
-              objectFit: "cover",
-              background: "black",
-              borderRadius: 8,
-              marginBottom: 12
-            }}
-          />
-        </div>
-
-        <button
-          onClick={() => {
-            if (videoRef.current) videoRef.current.muted = false;
-          }}
-          style={{ padding: "8px 16px", marginBottom: 12 }}
-        >
-          Allow Audio
-        </button>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <label style={{ fontSize: 14 }}>Character</label>
-
-          <select
-            onChange={(e) => change_character(e.target.value)}
-            defaultValue="0"
-            style={{
-              padding: 8,
-              borderRadius: 6,
-              border: "1px solid gray"
+        <CardContent sx={{ p: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              mb: 1.5
             }}
           >
-            <option value="0">Character 1</option>
-            <option value="1">Character 2</option>
-          </select>
-        </div>
+            <Typography variant="h6" align="center">
+              Unity WebRTC Stream
+            </Typography>
 
-      </div>
-    </div>
+            <Box
+              sx={{
+                width: "92%",
+                aspectRatio: "1 / 1",
+                bgcolor: "black",
+                borderRadius: 1,
+                overflow: "hidden",
+                mt: 1.5
+              }}
+            >
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover"
+                }}
+              />
+            </Box>
+          </Box>
+
+          <Button
+            fullWidth
+            variant="outlined"
+            sx={{ mb: 1.5 }}
+            onClick={() => {
+              if (videoRef.current) videoRef.current.muted = false;
+            }}
+          >
+            Allow Audio
+          </Button>
+
+          <Typography variant="body2" sx={{ mb: 0.5 }}>
+            Character
+          </Typography>
+
+          <Select
+            fullWidth
+            size="small"
+            defaultValue="0"
+            onChange={(e) => change_character(e.target.value)}
+          >
+            <MenuItem value="0">Character 1</MenuItem>
+            <MenuItem value="1">Character 2</MenuItem>
+          </Select>
+        </CardContent>
+      </Card>
+    </Box>
   );
 
 }
