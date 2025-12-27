@@ -13,6 +13,7 @@ import {
   Slider
 } from "@mui/material";
 import { ChromePicker } from "react-color";
+import "./App.css";
 
 function App() {
   const videoRef = useRef(null);
@@ -21,9 +22,44 @@ function App() {
   const streamRef = useRef(new MediaStream());
 
   const [inputText, setInputText] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(30);
+  const [isTyping, setIsTyping] = useState(false);
   const [bgColor, setBgColor] = useState("#000000");
   const [size, setSize] = useState(50);
   const [voice, setVoice] = useState("0");
+
+  const messagesEndRef = useRef(null);
+  const chatBoxRef = useRef(null);
+
+  // Auto-scroll to bottom when messages change (if likely a new message)
+  useEffect(() => {
+    // Only scroll if we are looking at the latest messages (or if it's a new one)
+    // A simple heuristic: scroll if visibleCount is enough to show the end, OR always on new message
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
+
+  // Handle Infinite Scroll (Load more when scrolling up)
+  const handleScroll = () => {
+    if (chatBoxRef.current) {
+      const { scrollTop, scrollHeight } = chatBoxRef.current;
+      if (scrollTop === 0 && visibleCount < messages.length) {
+        // Save old scroll height to maintain position
+        const oldScrollHeight = scrollHeight;
+
+        setVisibleCount((prev) => Math.min(prev + 10, messages.length));
+
+        // Restore scroll position after render (need to wait for layout update)
+        // We use a small timeout or requestAnimationFrame, but in React state updates are batched.
+        // A better way is a useLayoutEffect tracking visibleCount, but we can try a simple fix here or use a layout effect.
+        requestAnimationFrame(() => {
+          if (chatBoxRef.current) {
+            chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight - oldScrollHeight;
+          }
+        });
+      }
+    }
+  };
 
   function change_character(id) {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -34,17 +70,74 @@ function App() {
     }
   }
 
-  function send_message() {
+  async function callOllama(prompt, history) {
+    try {
+      // Convert history to Ollama format
+      const contextMessages = history.map(msg => ({
+        role: msg.sender === "user" ? "user" : "assistant",
+        content: msg.text
+      }));
+
+      // Add the new prompt
+      contextMessages.push({ role: "user", content: prompt });
+
+      // Add a system prompt to keep it in character/helpful
+      const systemMessage = {
+        role: "system",
+        content: "Du bist keine KI, sondern ein virtueller Mensch (ein Kumpel). Verhalte dich absolut natürlich, emotional und gesprächig. Fasse dich kurz. Erkläre NIEMALS Dinge ungefragt. Nutze Slang. Reagiere stark emotional auf Beleidigungen (nutze [wütend], [schreit]) oder traurige Themen (nutze [weint], [leise]). Sei nachtragend, wenn man dich beleidigt hat - sei nicht sofort wieder nett! Nutze oft Regieanweisungen wie [lacht], [seufzt], [überlegt], [sarkastisch], [flüstert]. Antworte immer auf Deutsch."
+      };
+
+      const payload = {
+        model: "llama3.1",
+        messages: [systemMessage, ...contextMessages],
+        stream: false
+      };
+
+      console.log("Sending Payload to Ollama:", JSON.stringify(payload.messages, null, 2));
+
+      const response = await fetch("http://localhost:11434/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Ollama API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.message.content;
+    } catch (error) {
+      console.error("Error calling Ollama:", error);
+      return "Error: Could not connect to Ollama.";
+    }
+  }
+
+  async function send_message() {
     if (inputText.trim() === "") return;
 
+    const userMsg = inputText.trim();
+    // Optimistically update UI
+    const newMessages = [...messages, { sender: "user", text: userMsg }];
+    setMessages(newMessages);
+    setInputText("");
+    setIsTyping(true); // Start typing animation
+
+    // Send to Unity (existing logic)
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({
         type: "message",
-        text: inputText
+        text: userMsg
       }));
-      console.log("Sent to Unity:", inputText);
-      setInputText("");
+      console.log("Sent to Unity:", userMsg);
     }
+
+    // Call Ollama with history
+    const botResponse = await callOllama(userMsg, messages);
+    setMessages((prev) => [...prev, { sender: "bot", text: botResponse }]);
+    setIsTyping(false); // Stop typing animation
   }
 
   useEffect(() => {
@@ -154,23 +247,95 @@ function App() {
             minHeight: 0
           }}
         >
-          <Typography variant="h6">Chat</Typography>
+          <Typography variant="h6" sx={{ fontWeight: "bold", color: "primary.main" }}>
+            MetaHuman Interface
+          </Typography>
 
           <Box
+            ref={chatBoxRef}
+            onScroll={handleScroll}
             sx={{
               flex: 1,
+              bgcolor: "#f8f9fa", // Modern light grey background
               border: "1px solid",
-              borderColor: "grey.500",
-              borderRadius: 1,
-              p: 1.25,
+              borderColor: "grey.200",
+              borderRadius: 3,
+              p: 3,
               overflowY: "auto",
-              minHeight: 0
+              minHeight: 0,
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "inset 0 2px 4px rgba(0,0,0,0.02)"
             }}
           >
+            {/* Header Area (Simulated) */}
+            <Typography variant="caption" sx={{ color: "grey.500", textAlign: "center", mb: 2, display: "block" }}>
+              AI Assistant Online
+            </Typography>
+
             {/* Chat Messages */}
+            {messages.slice(-visibleCount).map((msg, index) => (
+              <Box
+                key={index}
+                sx={{
+                  alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
+                  bgcolor: msg.sender === "user" ? "transparent" : "#ffffff",
+                  backgroundImage: msg.sender === "user" ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" : "none",
+                  color: msg.sender === "user" ? "white" : "#1a1a1a",
+                  p: 2,
+                  px: 2.5,
+                  borderRadius: msg.sender === "user" ? "20px 20px 4px 20px" : "20px 20px 20px 4px",
+                  mb: 1.5,
+                  maxWidth: "75%",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  position: "relative",
+                  wordWrap: "break-word",
+                  fontSize: "0.95rem",
+                  lineHeight: 1.5,
+                  border: msg.sender === "user" ? "none" : "1px solid #eaebed"
+                }}
+              >
+                <Typography variant="body1" sx={{ fontSize: "inherit" }}>{msg.text}</Typography>
+              </Box>
+            ))}
+
+            {/* Typing Indicator Bubble */}
+            {isTyping && (
+              <Box
+                sx={{
+                  alignSelf: "flex-start",
+                  bgcolor: "#ffffff",
+                  p: 2,
+                  px: 2.5,
+                  borderRadius: "20px 20px 20px 4px",
+                  mb: 1.5,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  border: "1px solid #eaebed",
+                  display: "flex",
+                  gap: 0.5,
+                  alignItems: "center",
+                  height: "24px"
+                }}
+              >
+                <span className="typing-dot"></span>
+                <span className="typing-dot"></span>
+                <span className="typing-dot"></span>
+              </Box>
+            )}
+            <div ref={messagesEndRef} />
           </Box>
 
-          <Box sx={{ display: "flex", gap: 1 }}>
+          <Box sx={{
+            display: "flex",
+            gap: 1.5,
+            p: 1.5,
+            bgcolor: "white",
+            borderRadius: 4,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+            border: "1px solid",
+            borderColor: "grey.200",
+            alignItems: "center"
+          }}>
             <TextField
               fullWidth
               size="small"
@@ -178,8 +343,25 @@ function App() {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send_message()}
+              variant="standard"
+              InputProps={{
+                disableUnderline: true,
+                sx: { px: 1 }
+              }}
             />
-            <Button variant="contained" onClick={send_message}>
+            <Button
+              variant="contained"
+              onClick={send_message}
+              sx={{
+                borderRadius: 5,
+                textTransform: "none",
+                fontWeight: "bold",
+                backgroundImage: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                boxShadow: "0 4px 12px rgba(107, 115, 255, 0.4)",
+                px: 3,
+                minWidth: "auto"
+              }}
+            >
               Send
             </Button>
           </Box>
