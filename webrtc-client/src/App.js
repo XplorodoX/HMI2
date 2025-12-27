@@ -138,6 +138,16 @@ function App() {
       // Call Ollama with history
       const botResponse = await callOllama(userMsg, messages);
       console.log("Original bot response (for TTS):", botResponse);
+
+      // Send bot response to Unity for TTS
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({
+          type: "message",
+          text: botResponse
+        }));
+        console.log("Sent bot response to Unity for TTS:", botResponse);
+      }
+
       setMessages((prev) => [...prev, { sender: "bot", text: botResponse }]);
     } catch (error) {
       setMessages((prev) => [
