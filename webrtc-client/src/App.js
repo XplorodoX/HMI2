@@ -9,7 +9,8 @@ import {
   TextField,
   Select,
   MenuItem,
-  Typography
+  Typography,
+  Slider
 } from "@mui/material";
 import { ChromePicker } from "react-color";
 
@@ -21,6 +22,8 @@ function App() {
 
   const [inputText, setInputText] = useState("");
   const [bgColor, setBgColor] = useState("#000000");
+  const [size, setSize] = useState(50);
+  const [voice, setVoice] = useState("0");
 
   function change_character(id) {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -39,7 +42,7 @@ function App() {
         type: "message",
         text: inputText
       }));
-      console.log("📤 Sent to Unity:", inputText);
+      console.log("Sent to Unity:", inputText);
       setInputText("");
     }
   }
@@ -120,51 +123,11 @@ function App() {
     };
   }, []);
 
-  /*return (
-      <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
-        <h2>Unity WebRTC Stream</h2>
-        
-        <div style={{ marginBottom: 20 }}>
-          <button onClick={() => change_character("0")}>Character 1</button>
-          <button onClick={() => change_character("1")}>Character 2</button>
-        </div>
-  
-        <div style={{ marginBottom: 20 }}>
-          <input 
-            type="text" 
-            value={inputText} 
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="Type a message to Unity..."
-            onKeyDown={(e) => e.key === 'Enter' && send_message()} 
-            style={{ padding: '8px', width: '250px' }}
-          />
-          <button onClick={send_message} style={{ padding: '8px 16px', marginLeft: '5px' }}>
-            Send
-          </button>
-        </div>
-  
-        <button 
-          onClick={() => { if (videoRef.current) videoRef.current.muted = false; }}
-          style={{ marginBottom: 10, padding: '8px 16px', display: 'block' }}
-        >
-          Allow Audio
-        </button>
-  
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          style={{ width: "100%", maxWidth: 600, background: "black", borderRadius: '8px' }}
-        />
-      </div>
-    );
-  }*/
   return (
     <Box
       sx={{
         display: "flex",
-        gap: 2.5,              // ≈ 20px
+        gap: 2.5,
         p: 2.5,
         height: "100vh",
         boxSizing: "border-box"
@@ -292,16 +255,53 @@ function App() {
             <MenuItem value="1">Character 2</MenuItem>
           </Select>
 
-          <Box sx={{ mt: 2 }}>
+          <Typography variant="body2" sx={{ mt: 2, mb: 0.5 }}>
+            Voice
+          </Typography>
+
+          <Select
+            fullWidth
+            size="small"
+            value={voice}
+            onChange={(e) => setVoice(e.target.value)}
+          >
+            <MenuItem value="0">Voice 1</MenuItem>
+            <MenuItem value="1">Voice 2</MenuItem>
+            <MenuItem value="2">Voice 3</MenuItem>
+            <MenuItem value="3">Voice 4</MenuItem>
+          </Select>
+
+          {/* Size slider */}
+          <Typography variant="body2" sx={{ mt: 2 }}>
+            Size
+          </Typography>
+
+          <Slider
+            value={size}
+            onChange={(_, value) => setSize(value)}
+            min={10}
+            max={100}
+            step={1}
+            size="small"
+            valueLabelDisplay="auto"
+          />
+
+
+
+          <Box sx={{ mt: 2, width: "100%" }}>
             <Typography variant="body2" sx={{ mb: 1 }}>
               Background Color
             </Typography>
 
-            <ChromePicker
-              color={bgColor}
-              onChange={(color) => setBgColor(color.hex)}
-            />
+            <Box sx={{ width: "100%" }}>
+              <ChromePicker
+                color={bgColor}
+                onChange={(color) => setBgColor(color.hex)}
+                width="100%"
+              />
+            </Box>
           </Box>
+
         </CardContent>
       </Card>
     </Box>
