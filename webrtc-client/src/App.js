@@ -111,7 +111,7 @@ function App() {
       return data.message.content;
     } catch (error) {
       console.error("Error calling Ollama:", error);
-      return "Error: Could not connect to Ollama.";
+      throw error; // Propagate error to caller
     }
   }
 
@@ -134,10 +134,21 @@ function App() {
       console.log("Sent to Unity:", userMsg);
     }
 
-    // Call Ollama with history
-    const botResponse = await callOllama(userMsg, messages);
-    setMessages((prev) => [...prev, { sender: "bot", text: botResponse }]);
-    setIsTyping(false); // Stop typing animation
+    try {
+      // Call Ollama with history
+      const botResponse = await callOllama(userMsg, messages);
+      setMessages((prev) => [...prev, { sender: "bot", text: botResponse }]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "system",
+          text: "⚠ Fehler: Ollama ist nicht erreichbar. Bitte stelle sicher, dass Ollama läuft (ollama serve).",
+        },
+      ]);
+    } finally {
+      setIsTyping(false); // Stop typing animation
+    }
   }
 
   useEffect(() => {
@@ -216,6 +227,15 @@ function App() {
     };
   }, []);
 
+  const cleanMessage = (text) => {
+    // Remove content in brackets like [lacht] or [fault], handling potential newlines inside brackets
+    const cleaned = text.replace(/\[[\s\S]*?\]/g, "").trim();
+    if (text !== cleaned) {
+      console.log(`Cleaned message: "${text.substring(0, 20)}..." -> "${cleaned.substring(0, 20)}..."`);
+    }
+    return cleaned;
+  };
+
   return (
     <Box
       sx={{
@@ -278,24 +298,50 @@ function App() {
               <Box
                 key={index}
                 sx={{
-                  alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
-                  bgcolor: msg.sender === "user" ? "transparent" : "#ffffff",
-                  backgroundImage: msg.sender === "user" ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" : "none",
-                  color: msg.sender === "user" ? "white" : "#1a1a1a",
+                  alignSelf:
+                    msg.sender === "user"
+                      ? "flex-end"
+                      : msg.sender === "system"
+                        ? "center"
+                        : "flex-start",
+                  bgcolor:
+                    msg.sender === "user"
+                      ? "transparent"
+                      : msg.sender === "system"
+                        ? "#ffebee" // Light red for errors
+                        : "#ffffff",
+                  backgroundImage:
+                    msg.sender === "user"
+                      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                      : "none",
+                  color:
+                    msg.sender === "user"
+                      ? "white"
+                      : msg.sender === "system"
+                        ? "#d32f2f" // Dark red text
+                        : "#1a1a1a",
                   p: 2,
                   px: 2.5,
-                  borderRadius: msg.sender === "user" ? "20px 20px 4px 20px" : "20px 20px 20px 4px",
+                  borderRadius:
+                    msg.sender === "user"
+                      ? "20px 20px 4px 20px"
+                      : msg.sender === "system"
+                        ? "10px"
+                        : "20px 20px 20px 4px",
                   mb: 1.5,
-                  maxWidth: "75%",
+                  maxWidth: msg.sender === "system" ? "90%" : "75%",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                   position: "relative",
                   wordWrap: "break-word",
                   fontSize: "0.95rem",
                   lineHeight: 1.5,
-                  border: msg.sender === "user" ? "none" : "1px solid #eaebed"
+                  border: msg.sender === "user" ? "none" : "1px solid #eaebed",
+                  textAlign: msg.sender === "system" ? "center" : "left",
                 }}
               >
-                <Typography variant="body1" sx={{ fontSize: "inherit" }}>{msg.text}</Typography>
+                <Typography variant="body1" sx={{ fontSize: "inherit" }}>
+                  {msg.sender === 'system' ? msg.text : cleanMessage(msg.text)}
+                </Typography>
               </Box>
             ))}
 
