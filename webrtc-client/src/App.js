@@ -11,6 +11,7 @@ import {
   MenuItem,
   Typography
 } from "@mui/material";
+import { ChromePicker } from "react-color";
 
 function App() {
   const videoRef = useRef(null);
@@ -19,6 +20,7 @@ function App() {
   const streamRef = useRef(new MediaStream());
 
   const [inputText, setInputText] = useState("");
+  const [bgColor, setBgColor] = useState("#000000");
 
   function change_character(id) {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -289,6 +291,17 @@ function App() {
             <MenuItem value="0">Character 1</MenuItem>
             <MenuItem value="1">Character 2</MenuItem>
           </Select>
+
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              Background Color
+            </Typography>
+
+            <ChromePicker
+              color={bgColor}
+              onChange={(color) => setBgColor(color.hex)}
+            />
+          </Box>
         </CardContent>
       </Card>
     </Box>
