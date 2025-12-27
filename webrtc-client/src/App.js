@@ -139,7 +139,8 @@ function App() {
           flex: 2,
           display: "flex",
           flexDirection: "column",
-          borderRadius: 1
+          borderRadius: 1,
+          minHeight: 0
         }}
         variant="outlined"
       >
@@ -149,7 +150,8 @@ function App() {
             display: "flex",
             flexDirection: "column",
             gap: 2,
-            p: 2
+            p: 2,
+            minHeight: 0
           }}
         >
           <Typography variant="h6">Chat</Typography>
@@ -161,7 +163,8 @@ function App() {
               borderColor: "grey.500",
               borderRadius: 1,
               p: 1.25,
-              overflowY: "auto"
+              overflowY: "auto",
+              minHeight: 0
             }}
           >
             {/* Chat Messages */}
@@ -183,17 +186,28 @@ function App() {
         </CardContent>
       </Card>
 
+
       {/* right Card Container */}
       <Card
         sx={{
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          borderRadius: 1
+          borderRadius: 1,
+          minHeight: 0
         }}
         variant="outlined"
       >
-        <CardContent sx={{ p: 2 }}>
+        <CardContent
+          sx={{
+            p: 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            overflowY: "auto",
+            minHeight: 0
+          }}
+        >
           <Box
             sx={{
               display: "flex",
@@ -271,7 +285,6 @@ function App() {
             <MenuItem value="3">Voice 4</MenuItem>
           </Select>
 
-          {/* Size slider */}
           <Typography variant="body2" sx={{ mt: 2 }}>
             Size
           </Typography>
@@ -286,8 +299,6 @@ function App() {
             valueLabelDisplay="auto"
           />
 
-
-
           <Box sx={{ mt: 2, width: "100%" }}>
             <Typography variant="body2" sx={{ mb: 1 }}>
               Background Color
@@ -301,7 +312,6 @@ function App() {
               />
             </Box>
           </Box>
-
         </CardContent>
       </Card>
     </Box>
