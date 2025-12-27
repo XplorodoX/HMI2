@@ -137,6 +137,7 @@ function App() {
     try {
       // Call Ollama with history
       const botResponse = await callOllama(userMsg, messages);
+      console.log("Original bot response (for TTS):", botResponse);
       setMessages((prev) => [...prev, { sender: "bot", text: botResponse }]);
     } catch (error) {
       setMessages((prev) => [
@@ -228,10 +229,23 @@ function App() {
   }, []);
 
   const cleanMessage = (text) => {
-    // Remove content in brackets like [lacht] or [fault], handling potential newlines inside brackets
-    const cleaned = text.replace(/\[[\s\S]*?\]/g, "").trim();
+    if (!text) return "";
+    let cleaned = text;
+    let previous = "";
+
+    // Iteratively remove brackets to handle nested cases like [[tag]] or malformed sequences
+    // Also handles full-width brackets and escaped brackets if present
+    while (cleaned !== previous) {
+      previous = cleaned;
+      cleaned = cleaned
+        .replace(/\[[\s\S]*?\]/g, "")      // Standard []
+        .replace(/\uff3b[\s\S]*?\uff3d/g, "") // Full-width ［］
+        .replace(/\\\[[\s\S]*?\\\]/g, "")  // Escaped \[ \]
+        .trim();
+    }
+
     if (text !== cleaned) {
-      console.log(`Cleaned message: "${text.substring(0, 20)}..." -> "${cleaned.substring(0, 20)}..."`);
+      console.log(`Cleaned message debug:`, { original: text, cleaned });
     }
     return cleaned;
   };
@@ -267,7 +281,7 @@ function App() {
             minHeight: 0
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: "bold", color: "primary.main" }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", color: "#000000" }}>
             MetaHuman Interface
           </Typography>
 
@@ -290,60 +304,66 @@ function App() {
           >
             {/* Header Area (Simulated) */}
             <Typography variant="caption" sx={{ color: "grey.500", textAlign: "center", mb: 2, display: "block" }}>
-              AI Assistant Online
+              AI Assistant Online (v1.1)
             </Typography>
 
             {/* Chat Messages */}
-            {messages.slice(-visibleCount).map((msg, index) => (
-              <Box
-                key={index}
-                sx={{
-                  alignSelf:
-                    msg.sender === "user"
-                      ? "flex-end"
-                      : msg.sender === "system"
-                        ? "center"
-                        : "flex-start",
-                  bgcolor:
-                    msg.sender === "user"
-                      ? "transparent"
-                      : msg.sender === "system"
-                        ? "#ffebee" // Light red for errors
-                        : "#ffffff",
-                  backgroundImage:
-                    msg.sender === "user"
-                      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                      : "none",
-                  color:
-                    msg.sender === "user"
-                      ? "white"
-                      : msg.sender === "system"
-                        ? "#d32f2f" // Dark red text
-                        : "#1a1a1a",
-                  p: 2,
-                  px: 2.5,
-                  borderRadius:
-                    msg.sender === "user"
-                      ? "20px 20px 4px 20px"
-                      : msg.sender === "system"
-                        ? "10px"
-                        : "20px 20px 20px 4px",
-                  mb: 1.5,
-                  maxWidth: msg.sender === "system" ? "90%" : "75%",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                  position: "relative",
-                  wordWrap: "break-word",
-                  fontSize: "0.95rem",
-                  lineHeight: 1.5,
-                  border: msg.sender === "user" ? "none" : "1px solid #eaebed",
-                  textAlign: msg.sender === "system" ? "center" : "left",
-                }}
-              >
-                <Typography variant="body1" sx={{ fontSize: "inherit" }}>
-                  {msg.sender === 'system' ? msg.text : cleanMessage(msg.text)}
-                </Typography>
-              </Box>
-            ))}
+            {messages.slice(-visibleCount).map((msg, index) => {
+              // Debug logging for specific message
+              const isSystem = msg.sender === "system";
+              const displayText = isSystem ? msg.text : cleanMessage(msg.text);
+
+              return (
+                <Box
+                  key={index}
+                  sx={{
+                    alignSelf:
+                      msg.sender === "user"
+                        ? "flex-end"
+                        : isSystem
+                          ? "center"
+                          : "flex-start",
+                    bgcolor:
+                      msg.sender === "user"
+                        ? "transparent"
+                        : isSystem
+                          ? "#ffebee" // Light red for errors
+                          : "#ffffff",
+                    backgroundImage:
+                      msg.sender === "user"
+                        ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                        : "none",
+                    color:
+                      msg.sender === "user"
+                        ? "white"
+                        : isSystem
+                          ? "#d32f2f" // Dark red text
+                          : "#1a1a1a",
+                    p: 2,
+                    px: 2.5,
+                    borderRadius:
+                      msg.sender === "user"
+                        ? "20px 20px 4px 20px"
+                        : isSystem
+                          ? "10px"
+                          : "20px 20px 20px 4px",
+                    mb: 1.5,
+                    maxWidth: isSystem ? "90%" : "75%",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                    position: "relative",
+                    wordWrap: "break-word",
+                    fontSize: "0.95rem",
+                    lineHeight: 1.5,
+                    border: msg.sender === "user" ? "none" : "1px solid #eaebed",
+                    textAlign: isSystem ? "center" : "left",
+                  }}
+                >
+                  <Typography variant="body1" sx={{ fontSize: "inherit" }}>
+                    {displayText}
+                  </Typography>
+                </Box>
+              );
+            })}
 
             {/* Typing Indicator Bubble */}
             {isTyping && (
