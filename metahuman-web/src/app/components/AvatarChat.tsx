@@ -32,8 +32,11 @@ const AvatarChat = () => {
     const [models, setModels] = useState<string[]>([]);
     const [selectedModel, setSelectedModel] = useState<string>('llama3.1:latest');
     const [isLoadingModels, setIsLoadingModels] = useState(true);
+    const [isPulling, setIsPulling] = useState(false);
+    const [pullProgress, setPullProgress] = useState<{ status: string, percentage: number }>({ status: '', percentage: 0 });
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const psRef = useRef<PixelStreamingPlayerRef>(null);
+    const pullInitiatedRef = useRef(false);
 
     // Load sessions from localStorage on mount
     useEffect(() => {
@@ -57,7 +60,7 @@ const AvatarChat = () => {
     // Auto-save current chat to session
     useEffect(() => {
         if (currentSessionId && messages.length > 1) {
-            setSessions(prev => prev.map(session =>
+            setSessions((prev: ChatSession[]) => prev.map((session: ChatSession) =>
                 session.id === currentSessionId
                     ? { ...session, messages, model: selectedModel }
                     : session
@@ -65,8 +68,64 @@ const AvatarChat = () => {
         }
     }, [messages, currentSessionId, selectedModel]);
 
+    const pullModel = async (modelName: string) => {
+        setIsPulling(true);
+        try {
+            const response = await fetch('/api/models', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: modelName }),
+            });
+
+            if (!response.ok) throw new Error('Failed to start pull');
+
+            const reader = response.body?.getReader();
+            if (!reader) throw new Error('No reader available');
+
+            const decoder = new TextDecoder();
+            let accumulated = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                accumulated += decoder.decode(value, { stream: true });
+                const lines = accumulated.split('\n');
+                accumulated = lines.pop() || '';
+
+                for (const line of lines) {
+                    if (!line.trim()) continue;
+                    try {
+                        const data = JSON.parse(line);
+                        let percentage = 0;
+                        if (data.total && data.completed) {
+                            percentage = Math.round((data.completed / data.total) * 100);
+                        }
+                        setPullProgress({
+                            status: data.status || 'Lädt...',
+                            percentage: percentage
+                        });
+
+                        if (data.status === 'success') {
+                            setIsPulling(false);
+                            // Refresh models
+                            window.location.reload();
+                        }
+                    } catch (e) {
+                        console.warn('Error parsing stream line:', e);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Pull failed:', error);
+            setIsPulling(false);
+        }
+    };
+
     // Fetch available models on mount and check Ollama status
     useEffect(() => {
+        if (pullInitiatedRef.current) return;
+        pullInitiatedRef.current = true;
         const fetchModels = async () => {
             try {
                 const response = await fetch('/api/models');
@@ -75,15 +134,18 @@ const AvatarChat = () => {
                 if (data.error || !data.models || data.models.length === 0) {
                     setMessages([{
                         id: 1,
-                        text: "⚠️ Ollama ist gerade nicht erreichbar. Bitte starte Ollama mit 'ollama serve' im Terminal und lade die Seite neu.",
+                        text: "⚠️ Ollama ist erreichbar, aber es sind keine Modelle geladen. Ich versuche jetzt, 'llama3.1' automatisch für dich zu laden...",
                         sender: 'bot',
-                        emotion: 'angry'
+                        emotion: 'thinking'
                     }]);
                     setModels([]);
+                    // Automatically trigger pull if no models
+                    pullModel('llama3.1');
                 } else {
                     setModels(data.models);
-                    if (data.models.includes('llama3.1:latest')) {
-                        setSelectedModel('llama3.1:latest');
+                    if (data.models.includes('llama3.1:latest') || data.models.includes('llama3.1')) {
+                        const found = data.models.find((m: string) => m.startsWith('llama3.1')) || data.models[0];
+                        setSelectedModel(found);
                     } else {
                         setSelectedModel(data.models[0]);
                     }
@@ -122,7 +184,7 @@ const AvatarChat = () => {
     // Start new chat
     const startNewChat = () => {
         if (messages.length > 1 && !currentSessionId) {
-            const userMsg = messages.find(m => m.sender === 'user');
+            const userMsg = messages.find((m: Message) => m.sender === 'user');
             const newSession: ChatSession = {
                 id: Date.now().toString(),
                 title: userMsg ? generateTitle(userMsg.text) : 'Neuer Chat',
@@ -130,7 +192,7 @@ const AvatarChat = () => {
                 createdAt: new Date(),
                 model: selectedModel
             };
-            setSessions(prev => [newSession, ...prev]);
+            setSessions((prev: ChatSession[]) => [newSession, ...prev]);
         }
 
         setCurrentSessionId(null);
@@ -141,7 +203,7 @@ const AvatarChat = () => {
     // Load a session
     const loadSession = (session: ChatSession) => {
         if (messages.length > 1 && !currentSessionId) {
-            const userMsg = messages.find(m => m.sender === 'user');
+            const userMsg = messages.find((m: Message) => m.sender === 'user');
             const newSession: ChatSession = {
                 id: Date.now().toString(),
                 title: userMsg ? generateTitle(userMsg.text) : 'Neuer Chat',
@@ -149,7 +211,7 @@ const AvatarChat = () => {
                 createdAt: new Date(),
                 model: selectedModel
             };
-            setSessions(prev => [newSession, ...prev]);
+            setSessions((prev: ChatSession[]) => [newSession, ...prev]);
         }
 
         setCurrentSessionId(session.id);
@@ -161,7 +223,7 @@ const AvatarChat = () => {
     // Delete a session
     const deleteSession = (sessionId: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        setSessions(prev => prev.filter(s => s.id !== sessionId));
+        setSessions((prev: ChatSession[]) => prev.filter((s: ChatSession) => s.id !== sessionId));
         if (currentSessionId === sessionId) {
             startNewChat();
         }
@@ -211,7 +273,7 @@ const AvatarChat = () => {
                 const errorData = await response.json().catch(() => ({ error: response.statusText }));
                 console.error("API Error:", errorData.error || response.statusText);
                 const errorMsg: Message = { id: Date.now() + 1, text: `Fehler: ${errorData.error || 'Konnte KI nicht erreichen.'}`, sender: 'bot' };
-                setMessages(prev => [...prev, errorMsg]);
+                setMessages((prev: Message[]) => [...prev, errorMsg]);
                 return;
             }
 
@@ -223,7 +285,7 @@ const AvatarChat = () => {
                 emotion: data.emotion || 'neutral',
                 audio: data.audio
             };
-            setMessages(prev => [...prev, newBotMsg]);
+            setMessages((prev: Message[]) => [...prev, newBotMsg]);
 
             if (data.audio) {
                 try {
@@ -256,7 +318,7 @@ const AvatarChat = () => {
                 }
             }
             const errorMsg: Message = { id: Date.now() + 1, text: errorText, sender: 'bot' };
-            setMessages(prev => [...prev, errorMsg]);
+            setMessages((prev: Message[]) => [...prev, errorMsg]);
         }
     };
 
@@ -329,6 +391,18 @@ const AvatarChat = () => {
                 </div>
 
                 <div className="chat-messages" ref={messagesContainerRef}>
+                    {isPulling && (
+                        <div className="pull-overlay">
+                            <div className="pull-card">
+                                <h4>Modell wird geladen...</h4>
+                                <p>{pullProgress.status}</p>
+                                <div className="progress-bar-bg">
+                                    <div className="progress-bar-fill" style={{ width: `${pullProgress.percentage}%` }}></div>
+                                </div>
+                                <span className="progress-text">{pullProgress.percentage}%</span>
+                            </div>
+                        </div>
+                    )}
                     {messages.map((msg) => (
                         <div key={msg.id} className={`message ${msg.sender}`}>
                             {msg.text}

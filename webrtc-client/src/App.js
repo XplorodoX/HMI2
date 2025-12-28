@@ -28,6 +28,9 @@ function App() {
   const [bgColor, setBgColor] = useState("#000000");
   const [size, setSize] = useState(50);
   const [voice, setVoice] = useState("0");
+  const [isPulling, setIsPulling] = useState(false);
+  const [pullProgress, setPullProgress] = useState({ status: "", percentage: 0 });
+  const pullInitiatedRef = useRef(false);
 
   const messagesEndRef = useRef(null);
   const chatBoxRef = useRef(null);
@@ -69,6 +72,86 @@ function App() {
       }));
     }
   }
+
+  async function pullModel(modelName) {
+    setIsPulling(true);
+    try {
+      const response = await fetch("http://localhost:11434/api/pull", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: modelName, stream: true }),
+      });
+
+      if (!response.ok) throw new Error("Failed to start pull");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        accumulated += decoder.decode(value, { stream: true });
+        const lines = accumulated.split("\n");
+        accumulated = lines.pop();
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const data = JSON.parse(line);
+            let percentage = 0;
+            if (data.total && data.completed) {
+              percentage = Math.round((data.completed / data.total) * 100);
+            }
+            setPullProgress({
+              status: data.status || "Lädt...",
+              percentage: percentage
+            });
+
+            if (data.status === "success") {
+              setIsPulling(false);
+              // Small delay to let the model register
+              setTimeout(() => window.location.reload(), 1000);
+            }
+          } catch (e) {
+            console.warn("Error parsing stream line:", e);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Pull failed:", error);
+      setIsPulling(false);
+    }
+  }
+
+  async function checkModels() {
+    try {
+      const response = await fetch("http://localhost:11434/api/tags");
+      const data = await response.json();
+      const models = data.models || [];
+      const hasModel = models.some(m => m.name.startsWith("llama3.1"));
+
+      if (!hasModel) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: "system",
+            text: "Modell 'llama3.1' nicht gefunden. Ich starte den automatischen Download...",
+          },
+        ]);
+        pullModel("llama3.1");
+      }
+    } catch (error) {
+      console.error("Failed to check models:", error);
+    }
+  }
+
+  useEffect(() => {
+    if (pullInitiatedRef.current) return;
+    pullInitiatedRef.current = true;
+    checkModels();
+  }, []);
 
   async function callOllama(prompt, history) {
     try {
@@ -396,6 +479,37 @@ function App() {
                 <span className="typing-dot"></span>
                 <span className="typing-dot"></span>
                 <span className="typing-dot"></span>
+              </Box>
+            )}
+
+            {isPulling && (
+              <Box
+                sx={{
+                  alignSelf: "center",
+                  width: "80%",
+                  bgcolor: "rgba(255,255,255,0.9)",
+                  backdropFilter: "blur(10px)",
+                  p: 3,
+                  borderRadius: 4,
+                  mt: 2,
+                  textAlign: "center",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  border: "1px solid #667eea",
+                  zIndex: 10
+                }}
+              >
+                <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 1, color: "#667eea" }}>
+                  Modell wird geladen...
+                </Typography>
+                <Typography variant="body2" sx={{ color: "grey.600", mb: 2 }}>
+                  {pullProgress.status}
+                </Typography>
+                <Box sx={{ width: "100%", bgcolor: "#eee", borderRadius: 10, height: 10, overflow: "hidden", mb: 1 }}>
+                  <Box sx={{ width: `${pullProgress.percentage}%`, bgcolor: "#667eea", height: "100%", transition: "width 0.3s ease" }} />
+                </Box>
+                <Typography variant="caption" sx={{ color: "#667eea", fontWeight: "bold" }}>
+                  {pullProgress.percentage}%
+                </Typography>
               </Box>
             )}
             <div ref={messagesEndRef} />
