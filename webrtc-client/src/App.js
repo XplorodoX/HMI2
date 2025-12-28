@@ -385,8 +385,8 @@ function App() {
             minHeight: 0
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: "bold", color: "#000000" }}>
-            MetaHuman Interface
+          <Typography variant="h6" sx={{ fontWeight: "bold", color: "#1a202c" }}>
+            Alex AI (v1.3 - CACHE CLEAR REQUIRED)
           </Typography>
 
           <Box
