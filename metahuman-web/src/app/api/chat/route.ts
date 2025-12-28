@@ -40,7 +40,7 @@ export async function POST(req: Request) {
             console.error("Chat API failed:", e);
             // Fallback if backend is down
             return NextResponse.json({
-                text: "Entschuldigung, ich kann gerade nicht denken. Ist mein Gehirn-Server an?",
+                text: "Sorry, I can't think straight right now. Is my brain server turned on?",
                 emotion: "Sad"
             });
         }
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         text: chatResponseData.text,
-                        language: 'de',
+                        language: 'en',
                         emotion: chatResponseData.emotion ? chatResponseData.emotion.toLowerCase() : 'neutral'
                     })
                 });
