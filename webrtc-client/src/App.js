@@ -186,6 +186,10 @@ function App() {
         body: JSON.stringify(payload),
       });
 
+      if (response.status === 404) {
+        throw new Error("Modell 'llama3.1' nicht gefunden. Bitte warte, bis der automatische Download abgeschlossen ist.");
+      }
+
       if (!response.ok) {
         throw new Error(`Ollama API error: ${response.statusText}`);
       }
@@ -200,6 +204,11 @@ function App() {
 
   async function send_message() {
     if (inputText.trim() === "") return;
+
+    if (isPulling) {
+      setMessages(prev => [...prev, { sender: "system", text: "⚠️ Bitte warten, das KI-Modell wird noch heruntergeladen..." }]);
+      return;
+    }
 
     const userMsg = inputText.trim();
     // Optimistically update UI
