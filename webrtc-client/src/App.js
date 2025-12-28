@@ -76,7 +76,7 @@ function App() {
   async function pullModel(modelName) {
     setIsPulling(true);
     try {
-      const response = await fetch("http://localhost:11434/api/pull", {
+      const response = await fetch("http://127.0.0.1:11434/api/pull", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: modelName, stream: true }),
@@ -127,20 +127,20 @@ function App() {
 
   async function checkModels() {
     try {
-      const response = await fetch("http://localhost:11434/api/tags");
+      const response = await fetch("http://127.0.0.1:11434/api/tags");
       const data = await response.json();
       const models = data.models || [];
-      const hasModel = models.some(m => m.name.startsWith("llama3.1"));
+      const hasModel = models.some(m => m.name === "llama3.1:latest" || m.name === "llama3.1");
 
       if (!hasModel) {
         setMessages((prev) => [
           ...prev,
           {
             sender: "system",
-            text: "Modell 'llama3.1' nicht gefunden. Ich starte den automatischen Download...",
+            text: "Modell 'llama3.1:latest' nicht gefunden. Ich starte den automatischen Download...",
           },
         ]);
-        pullModel("llama3.1");
+        pullModel("llama3.1:latest");
       }
     } catch (error) {
       console.error("Failed to check models:", error);
@@ -171,14 +171,14 @@ function App() {
       };
 
       const payload = {
-        model: "llama3.1",
+        model: "llama3.1:latest",
         messages: [systemMessage, ...contextMessages],
         stream: false
       };
 
       console.log("Sending Payload to Ollama:", JSON.stringify(payload.messages, null, 2));
 
-      const response = await fetch("http://localhost:11434/api/chat", {
+      const response = await fetch("http://127.0.0.1:11434/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -186,12 +186,14 @@ function App() {
         body: JSON.stringify(payload),
       });
 
-      if (response.status === 404) {
-        throw new Error("Modell 'llama3.1' nicht gefunden. Bitte warte, bis der automatische Download abgeschlossen ist.");
-      }
-
       if (!response.ok) {
-        throw new Error(`Ollama API error: ${response.statusText}`);
+        const errorBody = await response.text();
+        console.error("Ollama Error Body:", errorBody);
+
+        if (response.status === 404) {
+          throw new Error(`Modell 'llama3.1:latest' wurde von Ollama nicht gefunden (404). Antwort: ${errorBody}`);
+        }
+        throw new Error(`Ollama API error (${response.status}): ${response.statusText}`);
       }
 
       const data = await response.json();

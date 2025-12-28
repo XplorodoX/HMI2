@@ -134,13 +134,13 @@ const AvatarChat = () => {
                 if (data.error || !data.models || data.models.length === 0) {
                     setMessages([{
                         id: 1,
-                        text: "⚠️ Ollama ist erreichbar, aber es sind keine Modelle geladen. Ich versuche jetzt, 'llama3.1' automatisch für dich zu laden...",
+                        text: "⚠️ Ollama ist erreichbar, aber es sind keine Modelle geladen. Ich versuche jetzt, 'llama3.1:latest' automatisch für dich zu laden...",
                         sender: 'bot',
                         emotion: 'thinking'
                     }]);
                     setModels([]);
                     // Automatically trigger pull if no models
-                    pullModel('llama3.1');
+                    pullModel('llama3.1:latest');
                 } else {
                     setModels(data.models);
                     if (data.models.includes('llama3.1:latest') || data.models.includes('llama3.1')) {
