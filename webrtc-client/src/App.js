@@ -386,7 +386,7 @@ function App() {
           }}
         >
           <Typography variant="h6" sx={{ fontWeight: "bold", color: "#1a202c" }}>
-            Alex AI (v1.3 - CACHE CLEAR REQUIRED)
+            Alex AI (v1.2 - 127.0.0.1 Fix)
           </Typography>
 
           <Box

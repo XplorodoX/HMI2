@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
     try {
         const OLLAMA_URL = 'http://127.0.0.1:11434/api/tags';
-        
+
         const response = await fetch(OLLAMA_URL, {
             method: 'GET',
             headers: {
@@ -16,10 +16,10 @@ export async function GET() {
         }
 
         const data = await response.json();
-        
+
         // Extract model names from the response
         const models = data.models?.map((model: { name: string }) => model.name) || [];
-        
+
         return NextResponse.json({ models });
 
     } catch (error) {
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
         }
 
         const OLLAMA_PULL_URL = 'http://127.0.0.1:11434/api/pull';
-        
+
         const response = await fetch(OLLAMA_PULL_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
