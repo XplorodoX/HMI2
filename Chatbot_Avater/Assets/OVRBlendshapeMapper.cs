@@ -9,6 +9,9 @@ public class VisemeMap
     public float blendShapesweight2 = 1;
     public int[] blendShapes3;// blendshape indices
     public float blendShapesweight3 = 1;
+    [Header("Mouth Open")]
+    [Range(0f, 1f)]
+    public float mouthOpenAmount;
 }
 public class OVRBlendshapeMapper : MonoBehaviour
 {

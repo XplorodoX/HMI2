@@ -38,62 +38,77 @@ public class test : MonoBehaviour
             39,40,41,42,43,44,45,45,47,48,49
         };
         character.visemeToBlendTargets[2].blendShapesweight2 = 0.2f;
-        //2
+
+        //3
         character.visemeToBlendTargets[3].blendShapes = new int[] {
             16,152,153,158,159,160,161,162,163,164
         };
         character.visemeToBlendTargets[3].blendShapesweight = 0.5f;
 
+        //4
         character.visemeToBlendTargets[4].blendShapes = new int[] {
             16,152,153,158,159,160,161,162,163,164
         };
         character.visemeToBlendTargets[4].blendShapesweight = 0.75f;
 
+        //5
         character.visemeToBlendTargets[5].blendShapes = new int[] {
             5,
             158,159,160,161,162,163,164,165,166,167,
             3,6
         };
 
+        //6
         character.visemeToBlendTargets[6].blendShapes = new int[] {
-            158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175
+            13,168,170,172,173,174,175
         };
 
+        //7
         character.visemeToBlendTargets[7].blendShapes = new int[] {
-                30,31,32,33,90,91,92,93,266,267,262,263,
+               90,91,92,93,266,267,262,263,
                 98,99,100,101
         };
 
+        //8
         character.visemeToBlendTargets[8].blendShapes = new int[] {
             158,159,163,164
         };
         character.visemeToBlendTargets[8].blendShapesweight = 0.6f;
 
+        //9
         character.visemeToBlendTargets[9].blendShapes = new int[] {
-             168,169,170,171,172,173,174,175
+             13,168,169,170,171,172,173,174,175
         };
-
+        character.visemeToBlendTargets[9].blendShapesweight = 0.5f;
+        //10
         character.visemeToBlendTargets[10].blendShapes = new int[] {
            158,159,163,164
         };
 
         character.visemeToBlendTargets[10].blendShapesweight = 0.6f;
 
+        //11
         character.visemeToBlendTargets[11].blendShapes = new int[] {
-            26,27,28,29,30,31,32,33,168,169,170,171,262,263,266,267
+            168,169,170,171,266,267
         };
 
+        //12
         character.visemeToBlendTargets[12].blendShapes = new int[] {
             76,77,78,79,80,81,82,83,84,85
         };
+        character.visemeToBlendTargets[12].blendShapesweight = 0.5f;
 
+        //13
         character.visemeToBlendTargets[13].blendShapes = new int[] {
             98,99,100,101
         };
+        character.visemeToBlendTargets[13].blendShapesweight = 0.5f;
 
+        //14
         character.visemeToBlendTargets[14].blendShapes = new int[] {
             116,117,118,119,120,121
         };
+        character.visemeToBlendTargets[14].blendShapesweight = 0.5f;
 
         Debug.Log("Viseme blendshapes applied!");
     }
