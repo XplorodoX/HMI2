@@ -3,7 +3,7 @@ using UnityEngine;
 public class CharacterSelector : MonoBehaviour
 {
     public TextToSpeech textToSpeech;
-    public OVRLipSyncContextMorphTarget OVRLipSyncContextMorphTarget;
+    public OVRBlendshapeMapper OVRLipSyncContextMorphTarget;
     public Character[] characters;
 
     public void Start()
