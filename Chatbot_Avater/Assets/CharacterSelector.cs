@@ -19,7 +19,7 @@ public class CharacterSelector : MonoBehaviour
             {
                 textToSpeech.voice = characters[i].voice;
                 OVRLipSyncContextMorphTarget.skinnedMeshRenderer = characters[i].skinnedMeshRenderer;
-                OVRLipSyncContextMorphTarget.visemeToBlendTargets = characters[i].visemeToBlendTargets;
+                OVRLipSyncContextMorphTarget.character = characters[i];
             }
         }
     }

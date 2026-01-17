@@ -27,5 +27,9 @@ public class testEditor : Editor
         {
             script.ResetAllBlendshapes();
         }
+        if (GUILayout.Button("Aplly mouth offset"))
+        {
+            script.ApplyMounuthpos();
+        }
     }
 }

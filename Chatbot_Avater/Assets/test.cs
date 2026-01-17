@@ -147,6 +147,8 @@ public class test : MonoBehaviour
         {
             skinnedMeshRenderer.SetBlendShapeWeight(i, 0f);
         }
+        character.lowerTeeth.localPosition = character.lowerTeethClosedPos;
+        character.lowerTeeth.localEulerAngles = character.lowerTeethClosedRot;
     }
 
     // 🎯 Apply one viseme by setting all its blendshapes to 100
@@ -166,5 +168,12 @@ public class test : MonoBehaviour
         {
             skinnedMeshRenderer.SetBlendShapeWeight(character.visemeToBlendTargets[i].blendShapes3[j], 100f * character.visemeToBlendTargets[i].blendShapesweight3);
         }
+        character.lowerTeeth.localPosition = character.lowerTeethClosedPos + character.lowerTeethOpenOffset * character.visemeToBlendTargets[i].mouthOpenAmount;
+        character.lowerTeeth.localEulerAngles = character.lowerTeethClosedRot + character.lowerTeethOpenRot * character.visemeToBlendTargets[i].mouthOpenAmount;
+    }
+
+    public void ApplyMounuthpos()
+    {
+        character.lowerTeethOpenOffset = character.lowerTeeth.localPosition-character.lowerTeethClosedPos;
     }
 }

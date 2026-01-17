@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 [System.Serializable]
 public class VisemeMap
@@ -12,6 +13,7 @@ public class VisemeMap
     [Header("Mouth Open")]
     [Range(0f, 1f)]
     public float mouthOpenAmount;
+    public float mouthOpenRotAmount;
 }
 public class OVRBlendshapeMapper : MonoBehaviour
 {
@@ -24,7 +26,7 @@ public class OVRBlendshapeMapper : MonoBehaviour
 
     public OVRLipSyncContextBase lipsyncContext = null;
 
-    public VisemeMap[] visemeToBlendTargets = new VisemeMap[OVRLipSync.VisemeCount];
+    public Character character;
     void Start()
     {
         if (skinnedMeshRenderer == null)
@@ -55,15 +57,19 @@ public class OVRBlendshapeMapper : MonoBehaviour
             if (frame != null)
             {
                 SetVisemeToMorphTarget(frame);
+                if (character.lowerTeeth != null)
+                {
+                    ApplyMoutPos(frame);
+                }
             }
         }
     }
 
     void SetVisemeToMorphTarget(OVRLipSync.Frame frame)
     {
-        for (int i = 0; i < visemeToBlendTargets.Length; i++)
+        for (int i = 0; i < character.visemeToBlendTargets.Length; i++)
         {
-            VisemeMap map = visemeToBlendTargets[i];
+            VisemeMap map = character.visemeToBlendTargets[i];
             if (map == null || map.blendShapes == null) continue;
             float weight = frame.Visemes[i]* 100f * map.blendShapesweight;
             float weight2 = frame.Visemes[i] * 100f * map.blendShapesweight;
@@ -72,22 +78,36 @@ public class OVRBlendshapeMapper : MonoBehaviour
             for (int j = 0; j < map.blendShapes.Length; j++)
             {
                 skinnedMeshRenderer.SetBlendShapeWeight(
-                        visemeToBlendTargets[i].blendShapes[j],
+                        character.visemeToBlendTargets[i].blendShapes[j],
                         weight);
             }
 
             for (int j = 0; j < map.blendShapes2.Length; j++)
             {
                 skinnedMeshRenderer.SetBlendShapeWeight(
-                        visemeToBlendTargets[i].blendShapes2[j],
+                        character.visemeToBlendTargets[i].blendShapes2[j],
                         weight2);
             }
 
             for (int j = 0; j < map.blendShapes3.Length; j++)
             {
                 skinnedMeshRenderer.SetBlendShapeWeight(
-                        visemeToBlendTargets[i].blendShapes3[j],
+                        character.visemeToBlendTargets[i].blendShapes3[j],
                         weight3);
+            }
+        }
+    }
+
+    void ApplyMoutPos(OVRLipSync.Frame frame)
+    {
+        float ammount = 0f;
+        for (int i = 0; i < character.visemeToBlendTargets.Length; i++)
+        {
+            if ((frame.Visemes[i] * character.visemeToBlendTargets[i].mouthOpenAmount) > ammount)
+            {
+                ammount = frame.Visemes[i] * character.visemeToBlendTargets[i].mouthOpenAmount;
+                character.lowerTeeth.localPosition = character.lowerTeethClosedPos + character.lowerTeethOpenOffset * character.visemeToBlendTargets[i].mouthOpenAmount * frame.Visemes[i];
+                character.lowerTeeth.localEulerAngles = character.lowerTeethClosedRot + character.lowerTeethOpenRot * character.visemeToBlendTargets[i].mouthOpenAmount * frame.Visemes[i];
             }
         }
     }
