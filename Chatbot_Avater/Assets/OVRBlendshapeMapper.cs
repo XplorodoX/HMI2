@@ -29,6 +29,7 @@ public class OVRBlendshapeMapper : MonoBehaviour
     public Character character;
     void Start()
     {
+        skinnedMeshRenderer = character.skinnedMeshRenderer;
         if (skinnedMeshRenderer == null)
         {
             Debug.LogError("LipSyncContextMorphTarget.Start Error: " +
