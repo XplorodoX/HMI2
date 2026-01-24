@@ -642,9 +642,11 @@ function App() {
           >
             <MenuItem value="0">Character 1</MenuItem>
             <MenuItem value="1">Character 2</MenuItem>
+            <MenuItem value="2">Character 3</MenuItem>
+            <MenuItem value="3">Character 4</MenuItem>
           </Select>
 
-          <Typography variant="body2" sx={{ mt: 2, mb: 0.5 }}>
+          {/*<Typography variant="body2" sx={{ mt: 2, mb: 0.5 }}>
             Voice
           </Typography>
 
@@ -658,7 +660,7 @@ function App() {
             <MenuItem value="1">Voice 2</MenuItem>
             <MenuItem value="2">Voice 3</MenuItem>
             <MenuItem value="3">Voice 4</MenuItem>
-          </Select>
+          </Select>}*/}
 
           <Typography variant="body2" sx={{ mt: 2 }}>
             Size
@@ -674,7 +676,7 @@ function App() {
             valueLabelDisplay="auto"
           />
 
-          <Box sx={{ mt: 2, width: "100%" }}>
+          {/*<Box sx={{ mt: 2, width: "100%" }}>
             <Typography variant="body2" sx={{ mb: 1 }}>
               Background Color
             </Typography>
@@ -686,7 +688,7 @@ function App() {
                 width="100%"
               />
             </Box>
-          </Box>
+          </Box>*/}
         </CardContent>
       </Card>
     </Box>
