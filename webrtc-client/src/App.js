@@ -20,6 +20,8 @@ function App() {
   const pcRef = useRef(null);
   const wsRef = useRef(null);
   const streamRef = useRef(new MediaStream());
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
 
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState([]);
@@ -31,6 +33,8 @@ function App() {
   const [isPulling, setIsPulling] = useState(false);
   const [pullProgress, setPullProgress] = useState({ status: "", percentage: 0 });
   const pullInitiatedRef = useRef(false);
+  const [cardWidth, setCardWidth] = useState(420);
+
 
   const messagesEndRef = useRef(null);
   const chatBoxRef = useRef(null);
@@ -72,6 +76,25 @@ function App() {
       }));
     }
   }
+
+  const handleMouseDown = (e) => {
+    startXRef.current = e.clientX;
+    startWidthRef.current = cardWidth;
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const handleMouseMove = (e) => {
+    const delta = startXRef.current - e.clientX; //pull left to increase width
+    const newWidth = Math.min(Math.max(startWidthRef.current + delta, 300), 800);
+    setCardWidth(newWidth);
+  };
+
+  const handleMouseUp = () => {
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", handleMouseUp);
+  };
 
   async function pullModel(modelName) {
     setIsPulling(true);
@@ -565,14 +588,35 @@ function App() {
       {/* right Card Container */}
       <Card
         sx={{
-          flex: 1,
+          width: cardWidth,
+          minWidth: "0%", 
+          maxWidth: "48%",
+          flexShrink: 0,
+          position: "relative",
           display: "flex",
           flexDirection: "column",
           borderRadius: 1,
           minHeight: 0
         }}
+
         variant="outlined"
       >
+        {/* Resize Handle */}
+        <Box
+          onMouseDown={handleMouseDown}
+          sx={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: 6,
+            height: "100%",
+            cursor: "col-resize",
+            zIndex: 10,
+            "&:hover": {
+              backgroundColor: "rgba(0,0,0,0.08)"
+            }
+          }}
+        />
         <CardContent
           sx={{
             p: 2,
@@ -591,9 +635,7 @@ function App() {
               mb: 1.5
             }}
           >
-            <Typography variant="h6" align="center">
-              Unity WebRTC Stream
-            </Typography>
+
 
             <Box
               sx={{
@@ -646,49 +688,7 @@ function App() {
             <MenuItem value="3">Character 4</MenuItem>
           </Select>
 
-          {/*<Typography variant="body2" sx={{ mt: 2, mb: 0.5 }}>
-            Voice
-          </Typography>
 
-          <Select
-            fullWidth
-            size="small"
-            value={voice}
-            onChange={(e) => setVoice(e.target.value)}
-          >
-            <MenuItem value="0">Voice 1</MenuItem>
-            <MenuItem value="1">Voice 2</MenuItem>
-            <MenuItem value="2">Voice 3</MenuItem>
-            <MenuItem value="3">Voice 4</MenuItem>
-          </Select>}*/}
-
-          <Typography variant="body2" sx={{ mt: 2 }}>
-            Size
-          </Typography>
-
-          <Slider
-            value={size}
-            onChange={(_, value) => setSize(value)}
-            min={10}
-            max={100}
-            step={1}
-            size="small"
-            valueLabelDisplay="auto"
-          />
-
-          {/*<Box sx={{ mt: 2, width: "100%" }}>
-            <Typography variant="body2" sx={{ mb: 1 }}>
-              Background Color
-            </Typography>
-
-            <Box sx={{ width: "100%" }}>
-              <ChromePicker
-                color={bgColor}
-                onChange={(color) => setBgColor(color.hex)}
-                width="100%"
-              />
-            </Box>
-          </Box>*/}
         </CardContent>
       </Card>
     </Box>
