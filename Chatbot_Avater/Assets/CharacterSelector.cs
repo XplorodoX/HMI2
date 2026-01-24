@@ -21,7 +21,7 @@ public class CharacterSelector : MonoBehaviour
                 textToSpeech.voice = characters[i].voice;
                 OVRLipSyncContextMorphTarget.skinnedMeshRenderer = characters[i].skinnedMeshRenderer;
                 OVRLipSyncContextMorphTarget.character = characters[i];
-                cameraController.SetActiveCamera(characters[i].characterCamera);
+                cameraController.SetActiveCamera(characters[i].Camerapos, characters[i].Camerarot);
             }
         }
     }

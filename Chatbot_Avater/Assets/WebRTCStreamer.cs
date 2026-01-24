@@ -24,6 +24,8 @@ public class IceCandidateJSON
 }
 public class WebRTCStreamer : MonoBehaviour
 {
+    [SerializeField] private int width = 400;
+    [SerializeField] private int height = 720;
     [SerializeField] private Camera captureCamera;
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private TextToSpeech textToSpeech;
@@ -122,7 +124,7 @@ public class WebRTCStreamer : MonoBehaviour
         };
         pc = new RTCPeerConnection(ref config);
 
-        var rt = new RenderTexture(400, 720, 0, RenderTextureFormat.BGRA32);
+        var rt = new RenderTexture(width, height, 0, RenderTextureFormat.BGRA32);
         rt.enableRandomWrite = false;
         captureCamera.targetTexture = rt;
         captureCamera.targetTexture = rt;

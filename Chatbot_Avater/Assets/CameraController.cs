@@ -4,13 +4,9 @@ public class CameraController : MonoBehaviour
 {
     public Camera activeCamera;
 
-    public void SetActiveCamera(Camera camera)
+    public void SetActiveCamera(Vector3 pos,Vector3 rot)
     {
-        if (activeCamera != null)
-        {
-            activeCamera.gameObject.SetActive(false);
-        }
-        activeCamera = camera;
-        activeCamera.gameObject.SetActive(true);
+        activeCamera.transform.position = pos;
+        activeCamera.transform.eulerAngles = rot;
     }
 }

@@ -5,7 +5,8 @@ public class Character : MonoBehaviour
 {
     public string voice;
     public SkinnedMeshRenderer skinnedMeshRenderer = null;
-    public Camera characterCamera;
+    public Vector3 Camerapos;
+    public Vector3 Camerarot;
     public VisemeMap[] visemeToBlendTargets = new VisemeMap[OVRLipSync.VisemeCount];
 
     [Header("Teeth Transforms")]
