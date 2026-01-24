@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 public class TextToSpeech : MonoBehaviour
 {
     public AudioSource audioSource;
-    public Animator animator;
+    public AnimationController animator;
     private string apiKey = "HbvCBTgTW2N6rywjz63NRwyoXOSCpcTdKPfHaSLH1uB45Vqt6kmX33";
     public string text = "The milestone Overture 2023-07-26-alpha.0 release includes four unique data layers...";
     public string voice = "Sierra";
@@ -93,13 +93,14 @@ public class TextToSpeech : MonoBehaviour
             AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
             audioSource.clip = clip;
             audioSource.Play();
+            animator.PlayAnimation(audioSource);
         }
     }
 
     public void PlayAudioClip()
     {
         audioSource.Play();
-        animator.SetTrigger("start");
+        animator.PlayAnimation(audioSource);
     }
 
     [System.Serializable]

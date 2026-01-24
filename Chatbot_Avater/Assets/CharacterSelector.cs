@@ -5,6 +5,7 @@ public class CharacterSelector : MonoBehaviour
     public TextToSpeech textToSpeech;
     public OVRBlendshapeMapper OVRLipSyncContextMorphTarget;
     public Character[] characters;
+    public CameraController cameraController;
 
     public void Start()
     {
@@ -20,6 +21,7 @@ public class CharacterSelector : MonoBehaviour
                 textToSpeech.voice = characters[i].voice;
                 OVRLipSyncContextMorphTarget.skinnedMeshRenderer = characters[i].skinnedMeshRenderer;
                 OVRLipSyncContextMorphTarget.character = characters[i];
+                cameraController.SetActiveCamera(characters[i].characterCamera);
             }
         }
     }
