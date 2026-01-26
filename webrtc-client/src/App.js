@@ -248,13 +248,14 @@ function App() {
       const botResponse = await callOllama(userMsg, messages);
       console.log("Original bot response (for TTS):", botResponse);
 
-      // Send bot response to Unity for TTS
+      // Send bot response to Unity for TTS (cleaned - no stage directions)
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        const cleanedForTTS = cleanMessage(botResponse);
         wsRef.current.send(JSON.stringify({
           type: "message",
-          text: botResponse
+          text: cleanedForTTS
         }));
-        console.log("Sent bot response to Unity for TTS:", botResponse);
+        console.log("Sent cleaned bot response to Unity for TTS:", cleanedForTTS);
       }
 
       setMessages((prev) => [...prev, { sender: "bot", text: botResponse }]);
