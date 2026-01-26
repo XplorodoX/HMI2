@@ -300,7 +300,7 @@ function App() {
       }
     };
 
-    const ws = new WebSocket("ws://localhost:3001");
+    const ws = new WebSocket("ws://127.0.0.1:3001");
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -590,7 +590,7 @@ function App() {
       <Card
         sx={{
           width: cardWidth,
-          minWidth: "0%", 
+          minWidth: "0%",
           maxWidth: "48%",
           flexShrink: 0,
           position: "relative",
