@@ -352,7 +352,7 @@ function App() {
     let cleaned = text;
     let previous = "";
 
-    // Iteratively remove brackets to handle nested cases like [[tag]] or malformed sequences
+    // Iteratively remove brackets and asterisk comments to handle nested cases
     // Also handles full-width brackets and escaped brackets if present
     while (cleaned !== previous) {
       previous = cleaned;
@@ -360,6 +360,7 @@ function App() {
         .replace(/\[[\s\S]*?\]/g, "")      // Standard []
         .replace(/\uff3b[\s\S]*?\uff3d/g, "") // Full-width ［］
         .replace(/\\\[[\s\S]*?\\\]/g, "")  // Escaped \[ \]
+        .replace(/\*[^*]+\*/g, "")         // Asterisk comments like *smiles widely*
         .trim();
     }
 
