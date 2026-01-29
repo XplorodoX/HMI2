@@ -403,7 +403,7 @@ function App() {
           }}
         >
           <Typography variant="h6" sx={{ fontWeight: "bold", color: "#1a202c" }}>
-            Alex AI (v1.2 - 127.0.0.1 Fix)
+            Alex AI
           </Typography>
 
           <Box
