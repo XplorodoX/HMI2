@@ -11,6 +11,12 @@ In diesem Projekt wird eine Webanwendung zur Interaktion mit einem KI-basierten 
 -   **Character Switching**: Wechseln Sie zwischen verschiedenen Charakteren direkt im Interface.
 -   **Modern UI**: Anpassbares Layout mit Resizable Cards für Chat und Video.
 
+## System Requirements
+
+-   **RAM**: Mindestens 16 GB RAM erforderlich (empfohlen: mehr).
+    -   *Hinweis*: Ollama benötigt allein für das Modell bereits mindestens 4 GB. Für den gleichzeitigen Betrieb von Unity (Avatar) und der Web-App ist daher ausreichend Arbeitsspeicher notwendig.
+-   **GPU**: Dedizierte GPU empfohlen für flüssiges Rendering und LLM-Inferenz.
+
 ## Prerequisites
 
 -   **Node.js** (v18 or later)
