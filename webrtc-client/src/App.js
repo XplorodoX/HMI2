@@ -39,14 +39,12 @@ function App() {
   const messagesEndRef = useRef(null);
   const chatBoxRef = useRef(null);
 
-  // Auto-scroll to bottom when messages change (if likely a new message)
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
-    // Only scroll if we are looking at the latest messages (or if it's a new one)
-    // A simple heuristic: scroll if visibleCount is enough to show the end, OR always on new message
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // Handle Infinite Scroll (Load more when scrolling up)
+  // Handle Infinite Scroll
   const handleScroll = () => {
     if (chatBoxRef.current) {
       const { scrollTop, scrollHeight } = chatBoxRef.current;
@@ -56,9 +54,6 @@ function App() {
 
         setVisibleCount((prev) => Math.min(prev + 10, messages.length));
 
-        // Restore scroll position after render (need to wait for layout update)
-        // We use a small timeout or requestAnimationFrame, but in React state updates are batched.
-        // A better way is a useLayoutEffect tracking visibleCount, but we can try a simple fix here or use a layout effect.
         requestAnimationFrame(() => {
           if (chatBoxRef.current) {
             chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight - oldScrollHeight;
@@ -223,7 +218,7 @@ function App() {
       return data.message.content;
     } catch (error) {
       console.error("Error calling Ollama:", error);
-      throw error; // Propagate error to caller
+      throw error;
     }
   }
 
@@ -231,7 +226,7 @@ function App() {
     if (inputText.trim() === "") return;
 
     if (isPulling) {
-      setMessages(prev => [...prev, { sender: "system", text: "⚠️ Bitte warten, das KI-Modell wird noch heruntergeladen..." }]);
+      setMessages(prev => [...prev, { sender: "system", text: "Bitte warten, das KI-Modell wird noch heruntergeladen..." }]);
       return;
     }
 
@@ -240,7 +235,7 @@ function App() {
     const newMessages = [...messages, { sender: "user", text: userMsg }];
     setMessages(newMessages);
     setInputText("");
-    setIsTyping(true); // Start typing animation
+    setIsTyping(true); 
 
 
     try {
@@ -264,7 +259,7 @@ function App() {
         ...prev,
         {
           sender: "system",
-          text: "⚠ Fehler: Ollama ist nicht erreichbar. Bitte stelle sicher, dass Ollama läuft (ollama serve).",
+          text: "Fehler: Ollama ist nicht erreichbar. Bitte stelle sicher, dass Ollama läuft (ollama serve).",
         },
       ]);
     } finally {
@@ -358,10 +353,10 @@ function App() {
     while (cleaned !== previous) {
       previous = cleaned;
       cleaned = cleaned
-        .replace(/\[[\s\S]*?\]/g, "")      // Standard []
-        .replace(/\uff3b[\s\S]*?\uff3d/g, "") // Full-width ［］
-        .replace(/\\\[[\s\S]*?\\\]/g, "")  // Escaped \[ \]
-        .replace(/\*[^*]+\*/g, "")         // Asterisk comments like *smiles widely*
+        .replace(/\[[\s\S]*?\]/g, "")      
+        .replace(/\uff3b[\s\S]*?\uff3d/g, "") 
+        .replace(/\\\[[\s\S]*?\\\]/g, "")  
+        .replace(/\*[^*]+\*/g, "")         
         .trim();
     }
 
@@ -411,7 +406,7 @@ function App() {
             onScroll={handleScroll}
             sx={{
               flex: 1,
-              bgcolor: "#f8f9fa", // Modern light grey background
+              bgcolor: "#f8f9fa",
               border: "1px solid",
               borderColor: "grey.200",
               borderRadius: 3,
@@ -448,7 +443,7 @@ function App() {
                       msg.sender === "user"
                         ? "transparent"
                         : isSystem
-                          ? "#ffebee" // Light red for errors
+                          ? "#ffebee" 
                           : "#ffffff",
                     backgroundImage:
                       msg.sender === "user"
@@ -458,7 +453,7 @@ function App() {
                       msg.sender === "user"
                         ? "white"
                         : isSystem
-                          ? "#d32f2f" // Dark red text
+                          ? "#d32f2f"
                           : "#1a1a1a",
                     p: 2,
                     px: 2.5,
