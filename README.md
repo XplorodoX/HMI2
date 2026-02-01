@@ -1,6 +1,6 @@
 # HMI2 - MetaHuman Web Interface
 
-This project integrates an Unreal Engine 5 MetaHuman with a Next.js web application, allowing for real-time interaction via Pixel Streaming and an LLM-powered chat interface.
+In diesem Projekt wird eine Webanwendung zur Interaktion mit einem KI-basierten virtuellen Agenten umgesetzt. Die Kommunikation erfolgt über eine Chatoberfläche, während Audio- und Videoausgabe eine natürliche Darstellung ermöglichen. Die KI-Verarbeitung erfolgt lokal über ein Sprachmodell, das in Echtzeit mit der Benutzeroberfläche und einer Unity-Anwendung gekoppelt ist.
 
 ## Prerequisites
 
@@ -13,19 +13,34 @@ This project integrates an Unreal Engine 5 MetaHuman with a Next.js web applicat
 1.  Clone the repository:
     ```bash
     git clone <repository-url>
-    cd HMI2/metahuman-web
     ```
-
-2.  Install dependencies:
+2.  Start Signaling Server dependencies:
     ```bash
+    cd HMI2/SignalingServer
     npm install
+    npm start
     ```
 
-3.  Start the development server:
+3.  Start Frontend:
     ```bash
-    npm run dev
+    cd HMI2/Frontend
+    npm install
+    npm start
     ```
-    The app will be available at [http://localhost:3000](http://localhost:3000).
+    The Frontend will be available at [http://localhost:3000](http://localhost:3000).
+
+## Backend Avatar Setup
+    1. Chatbot_Avatar Unity Projekt öffnen
+
+    2. Unreal Engine speech anmelden und api key kopieren
+
+    3. In der TextToSpeech.cs Datei den api Key einfügen
+
+    4. Unity Projekt ausführen
+
+    5.Hinweis: Es kann auch der Unity build (also die Chatbot_Avatar.exe) gestartet werden. Jedoch ist dort der api key nicht hinterlegt und deshalb wird immer ein hinterlegter Text ausgegeben.
+
+
 
 ## LLM Setup (Ollama)
 

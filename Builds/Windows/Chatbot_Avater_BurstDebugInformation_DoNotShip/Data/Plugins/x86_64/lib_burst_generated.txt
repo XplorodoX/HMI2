@@ -1,4 +1,4 @@
-Library: D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
+Library: D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
 --platform=Windows
 --minimum-os-version=
 --backend=burst-llvm-19
@@ -10,10 +10,10 @@ Library: D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86
 --target-framework=NetFramework
 --linker-options=PdbAltPath="Chatbot_Avater_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=D:\Studium\Master\HMI2\Chatbot_Avater\Temp\Burst
+--temp-folder=D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.10f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
---decode-folder=D:\Studium\Master\HMI2\Chatbot_Avater\Library\Burst
---output=D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
+--decode-folder=D:\Studium\Master\HMI2\Chatbot_Avatar\Library\Burst
+--output=D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=UnityEngine.Rendering.GPUResidentDrawerBurst, Unity.RenderPipelines.GPUDriven.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null::ClassifyMaterials(Unity.Collections.NativeArray`1[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]&, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|Unity.Collections.NativeParallelHashMap`2+ReadOnly[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[UnityEngine.Rendering.BatchMaterialID, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]&, Unity.Collections, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|Unity.Collections.NativeList`1[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]&, Unity.Collections, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|Unity.Collections.NativeList`1[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]&, Unity.Collections, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|Unity.Collections.NativeList`1[[UnityEngine.Rendering.GPUDrivenPackedMaterialData, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]&, Unity.Collections, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null)--f259e9421b556600f769263137cdc7bc
@@ -127,10 +127,10 @@ Library: D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86
 --target-framework=NetFramework
 --linker-options=PdbAltPath="Chatbot_Avater_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=D:\Studium\Master\HMI2\Chatbot_Avater\Temp\Burst
+--temp-folder=D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.10f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
---decode-folder=D:\Studium\Master\HMI2\Chatbot_Avater\Library\Burst
---output=D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
+--decode-folder=D:\Studium\Master\HMI2\Chatbot_Avatar\Library\Burst
+--output=D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=UnityEngine.Rendering.GPUResidentDrawerBurst, Unity.RenderPipelines.GPUDriven.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null::ClassifyMaterials(Unity.Collections.NativeArray`1[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]&, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|Unity.Collections.NativeParallelHashMap`2+ReadOnly[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[UnityEngine.Rendering.BatchMaterialID, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]&, Unity.Collections, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|Unity.Collections.NativeList`1[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]&, Unity.Collections, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|Unity.Collections.NativeList`1[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]&, Unity.Collections, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|Unity.Collections.NativeList`1[[UnityEngine.Rendering.GPUDrivenPackedMaterialData, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]&, Unity.Collections, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null)--f259e9421b556600f769263137cdc7bc
@@ -244,10 +244,10 @@ Library: D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86
 --target-framework=NetFramework
 --linker-options=PdbAltPath="Chatbot_Avater_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=D:\Studium\Master\HMI2\Chatbot_Avater\Temp\Burst
+--temp-folder=D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.10f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
---decode-folder=D:\Studium\Master\HMI2\Chatbot_Avater\Library\Burst
---output=D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
+--decode-folder=D:\Studium\Master\HMI2\Chatbot_Avatar\Library\Burst
+--output=D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=Unity.Jobs.IJobParallelForExtensions+ParallelForJobStruct`1[[UnityEngine.Rendering.HighDefinition.WaterCPUSimulation+EvaluateDispersion, Unity.RenderPipelines.HighDefinition.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null::Execute(UnityEngine.Rendering.HighDefinition.WaterCPUSimulation+EvaluateDispersion&, Unity.RenderPipelines.HighDefinition.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|Unity.Jobs.LowLevel.Unsafe.JobRanges&, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089)--d94c3c77a51a8e1538dd0ac1e369651b
@@ -267,10 +267,10 @@ Library: D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86
 --target-framework=NetFramework
 --linker-options=PdbAltPath="Chatbot_Avater_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=D:\Studium\Master\HMI2\Chatbot_Avater\Temp\Burst
+--temp-folder=D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.10f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
---decode-folder=D:\Studium\Master\HMI2\Chatbot_Avater\Library\Burst
---output=D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
+--decode-folder=D:\Studium\Master\HMI2\Chatbot_Avatar\Library\Burst
+--output=D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=Unity.Jobs.IJobParallelForExtensions+ParallelForJobStruct`1[[UnityEngine.Rendering.HighDefinition.WaterCPUSimulation+EvaluateDispersion, Unity.RenderPipelines.HighDefinition.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null::Execute(UnityEngine.Rendering.HighDefinition.WaterCPUSimulation+EvaluateDispersion&, Unity.RenderPipelines.HighDefinition.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|Unity.Jobs.LowLevel.Unsafe.JobRanges&, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089)--d94c3c77a51a8e1538dd0ac1e369651b
@@ -291,10 +291,10 @@ Library: D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86
 --float-mode=Fast
 --linker-options=PdbAltPath="Chatbot_Avater_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=D:\Studium\Master\HMI2\Chatbot_Avater\Temp\Burst
+--temp-folder=D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.10f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
---decode-folder=D:\Studium\Master\HMI2\Chatbot_Avater\Library\Burst
---output=D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
+--decode-folder=D:\Studium\Master\HMI2\Chatbot_Avatar\Library\Burst
+--output=D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=Unity.Jobs.IJobParallelForExtensions+ParallelForJobStruct`1[[Unity.DemoTeam.DigitalHuman.SkinDeformationRenderer+AddBlendedDeltaJob, Unity.DemoTeam.DigitalHuman.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null::Execute(Unity.DemoTeam.DigitalHuman.SkinDeformationRenderer+AddBlendedDeltaJob&, Unity.DemoTeam.DigitalHuman.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|Unity.Jobs.LowLevel.Unsafe.JobRanges&, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089)--67308ce8cfdf1db591d4fff5dd29b433
@@ -311,10 +311,10 @@ Library: D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86
 --float-mode=Fast
 --linker-options=PdbAltPath="Chatbot_Avater_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
---temp-folder=D:\Studium\Master\HMI2\Chatbot_Avater\Temp\Burst
+--temp-folder=D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\Burst
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.10f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
---decode-folder=D:\Studium\Master\HMI2\Chatbot_Avater\Library\Burst
---output=D:\Studium\Master\HMI2\Chatbot_Avater\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
+--decode-folder=D:\Studium\Master\HMI2\Chatbot_Avatar\Library\Burst
+--output=D:\Studium\Master\HMI2\Chatbot_Avatar\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
 --pdb-search-paths=Temp/ManagedSymbols/
 
 --method=Unity.Jobs.IJobParallelForExtensions+ParallelForJobStruct`1[[Unity.DemoTeam.DigitalHuman.SkinDeformationRenderer+AddBlendedDeltaJob, Unity.DemoTeam.DigitalHuman.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null::Execute(Unity.DemoTeam.DigitalHuman.SkinDeformationRenderer+AddBlendedDeltaJob&, Unity.DemoTeam.DigitalHuman.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|System.IntPtr, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|Unity.Jobs.LowLevel.Unsafe.JobRanges&, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null|System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089)--67308ce8cfdf1db591d4fff5dd29b433
