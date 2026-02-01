@@ -20,6 +20,8 @@ function App() {
   const pcRef = useRef(null);
   const wsRef = useRef(null);
   const streamRef = useRef(new MediaStream());
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
 
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState([]);
@@ -31,18 +33,18 @@ function App() {
   const [isPulling, setIsPulling] = useState(false);
   const [pullProgress, setPullProgress] = useState({ status: "", percentage: 0 });
   const pullInitiatedRef = useRef(false);
+  const [cardWidth, setCardWidth] = useState(420);
+
 
   const messagesEndRef = useRef(null);
   const chatBoxRef = useRef(null);
 
-  // Auto-scroll to bottom when messages change (if likely a new message)
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
-    // Only scroll if we are looking at the latest messages (or if it's a new one)
-    // A simple heuristic: scroll if visibleCount is enough to show the end, OR always on new message
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // Handle Infinite Scroll (Load more when scrolling up)
+  // Handle Infinite Scroll
   const handleScroll = () => {
     if (chatBoxRef.current) {
       const { scrollTop, scrollHeight } = chatBoxRef.current;
@@ -52,9 +54,6 @@ function App() {
 
         setVisibleCount((prev) => Math.min(prev + 10, messages.length));
 
-        // Restore scroll position after render (need to wait for layout update)
-        // We use a small timeout or requestAnimationFrame, but in React state updates are batched.
-        // A better way is a useLayoutEffect tracking visibleCount, but we can try a simple fix here or use a layout effect.
         requestAnimationFrame(() => {
           if (chatBoxRef.current) {
             chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight - oldScrollHeight;
@@ -72,6 +71,25 @@ function App() {
       }));
     }
   }
+
+  const handleMouseDown = (e) => {
+    startXRef.current = e.clientX;
+    startWidthRef.current = cardWidth;
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const handleMouseMove = (e) => {
+    const delta = startXRef.current - e.clientX; //pull left to increase width
+    const newWidth = Math.min(Math.max(startWidthRef.current + delta, 300), 800);
+    setCardWidth(newWidth);
+  };
+
+  const handleMouseUp = () => {
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", handleMouseUp);
+  };
 
   async function pullModel(modelName) {
     setIsPulling(true);
@@ -167,7 +185,7 @@ function App() {
       // Add a system prompt to keep it in character/helpful
       const systemMessage = {
         role: "system",
-        content: "You are not an AI, but a virtual human (a buddy). Act absolutely natural, emotional, and talkative. Keep it short. NEVER explain things unless asked. Use slang. React strongly emotional to insults (use [angry], [screams]) or sad topics (use [cries], [whispers]). Be resentful if you've been insulted - don't be nice again immediately! Often use stage directions like [laughs], [sighs], [thinks], [sarcastic], [whispers]. Always answer in English."
+        content: "You are not an AI, but a virtual human (a buddy). Act absolutely natural, emotional, and talkative. Keep it short. NEVER explain things unless asked. React strongly emotional to insults (use [angry], [screams]) or sad topics (use [cries], [whispers]). Be resentful if you've been insulted - don't be nice again immediately! Often use stage directions like [laughs], [sighs], [thinks], [sarcastic], [whispers]. Always answer in English."
       };
 
       const payload = {
@@ -200,7 +218,7 @@ function App() {
       return data.message.content;
     } catch (error) {
       console.error("Error calling Ollama:", error);
-      throw error; // Propagate error to caller
+      throw error;
     }
   }
 
@@ -208,7 +226,7 @@ function App() {
     if (inputText.trim() === "") return;
 
     if (isPulling) {
-      setMessages(prev => [...prev, { sender: "system", text: "⚠️ Bitte warten, das KI-Modell wird noch heruntergeladen..." }]);
+      setMessages(prev => [...prev, { sender: "system", text: "Bitte warten, das KI-Modell wird noch heruntergeladen..." }]);
       return;
     }
 
@@ -217,7 +235,7 @@ function App() {
     const newMessages = [...messages, { sender: "user", text: userMsg }];
     setMessages(newMessages);
     setInputText("");
-    setIsTyping(true); // Start typing animation
+    setIsTyping(true); 
 
 
     try {
@@ -225,13 +243,14 @@ function App() {
       const botResponse = await callOllama(userMsg, messages);
       console.log("Original bot response (for TTS):", botResponse);
 
-      // Send bot response to Unity for TTS
+      // Send bot response to Unity for TTS (cleaned - no stage directions)
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        const cleanedForTTS = cleanMessage(botResponse);
         wsRef.current.send(JSON.stringify({
           type: "message",
-          text: botResponse
+          text: cleanedForTTS
         }));
-        console.log("Sent bot response to Unity for TTS:", botResponse);
+        console.log("Sent cleaned bot response to Unity for TTS:", cleanedForTTS);
       }
 
       setMessages((prev) => [...prev, { sender: "bot", text: botResponse }]);
@@ -240,7 +259,7 @@ function App() {
         ...prev,
         {
           sender: "system",
-          text: "⚠ Fehler: Ollama ist nicht erreichbar. Bitte stelle sicher, dass Ollama läuft (ollama serve).",
+          text: "Fehler: Ollama ist nicht erreichbar. Bitte stelle sicher, dass Ollama läuft (ollama serve).",
         },
       ]);
     } finally {
@@ -277,7 +296,7 @@ function App() {
       }
     };
 
-    const ws = new WebSocket("ws://localhost:3001");
+    const ws = new WebSocket("ws://127.0.0.1:3001");
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -329,14 +348,15 @@ function App() {
     let cleaned = text;
     let previous = "";
 
-    // Iteratively remove brackets to handle nested cases like [[tag]] or malformed sequences
+    // Iteratively remove brackets and asterisk comments to handle nested cases
     // Also handles full-width brackets and escaped brackets if present
     while (cleaned !== previous) {
       previous = cleaned;
       cleaned = cleaned
-        .replace(/\[[\s\S]*?\]/g, "")      // Standard []
-        .replace(/\uff3b[\s\S]*?\uff3d/g, "") // Full-width ［］
-        .replace(/\\\[[\s\S]*?\\\]/g, "")  // Escaped \[ \]
+        .replace(/\[[\s\S]*?\]/g, "")      
+        .replace(/\uff3b[\s\S]*?\uff3d/g, "") 
+        .replace(/\\\[[\s\S]*?\\\]/g, "")  
+        .replace(/\*[^*]+\*/g, "")         
         .trim();
     }
 
@@ -378,7 +398,7 @@ function App() {
           }}
         >
           <Typography variant="h6" sx={{ fontWeight: "bold", color: "#1a202c" }}>
-            Alex AI (v1.2 - 127.0.0.1 Fix)
+            Alex AI
           </Typography>
 
           <Box
@@ -386,7 +406,7 @@ function App() {
             onScroll={handleScroll}
             sx={{
               flex: 1,
-              bgcolor: "#f8f9fa", // Modern light grey background
+              bgcolor: "#f8f9fa",
               border: "1px solid",
               borderColor: "grey.200",
               borderRadius: 3,
@@ -423,7 +443,7 @@ function App() {
                       msg.sender === "user"
                         ? "transparent"
                         : isSystem
-                          ? "#ffebee" // Light red for errors
+                          ? "#ffebee" 
                           : "#ffffff",
                     backgroundImage:
                       msg.sender === "user"
@@ -433,7 +453,7 @@ function App() {
                       msg.sender === "user"
                         ? "white"
                         : isSystem
-                          ? "#d32f2f" // Dark red text
+                          ? "#d32f2f"
                           : "#1a1a1a",
                     p: 2,
                     px: 2.5,
@@ -565,14 +585,35 @@ function App() {
       {/* right Card Container */}
       <Card
         sx={{
-          flex: 1,
+          width: cardWidth,
+          minWidth: "0%",
+          maxWidth: "48%",
+          flexShrink: 0,
+          position: "relative",
           display: "flex",
           flexDirection: "column",
           borderRadius: 1,
           minHeight: 0
         }}
+
         variant="outlined"
       >
+        {/* Resize Handle */}
+        <Box
+          onMouseDown={handleMouseDown}
+          sx={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: 6,
+            height: "100%",
+            cursor: "col-resize",
+            zIndex: 10,
+            "&:hover": {
+              backgroundColor: "rgba(0,0,0,0.08)"
+            }
+          }}
+        />
         <CardContent
           sx={{
             p: 2,
@@ -591,9 +632,7 @@ function App() {
               mb: 1.5
             }}
           >
-            <Typography variant="h6" align="center">
-              Unity WebRTC Stream
-            </Typography>
+
 
             <Box
               sx={{
@@ -642,51 +681,11 @@ function App() {
           >
             <MenuItem value="0">Character 1</MenuItem>
             <MenuItem value="1">Character 2</MenuItem>
+            <MenuItem value="2">Character 3</MenuItem>
+            <MenuItem value="3">Character 4</MenuItem>
           </Select>
 
-          <Typography variant="body2" sx={{ mt: 2, mb: 0.5 }}>
-            Voice
-          </Typography>
 
-          <Select
-            fullWidth
-            size="small"
-            value={voice}
-            onChange={(e) => setVoice(e.target.value)}
-          >
-            <MenuItem value="0">Voice 1</MenuItem>
-            <MenuItem value="1">Voice 2</MenuItem>
-            <MenuItem value="2">Voice 3</MenuItem>
-            <MenuItem value="3">Voice 4</MenuItem>
-          </Select>
-
-          <Typography variant="body2" sx={{ mt: 2 }}>
-            Size
-          </Typography>
-
-          <Slider
-            value={size}
-            onChange={(_, value) => setSize(value)}
-            min={10}
-            max={100}
-            step={1}
-            size="small"
-            valueLabelDisplay="auto"
-          />
-
-          <Box sx={{ mt: 2, width: "100%" }}>
-            <Typography variant="body2" sx={{ mb: 1 }}>
-              Background Color
-            </Typography>
-
-            <Box sx={{ width: "100%" }}>
-              <ChromePicker
-                color={bgColor}
-                onChange={(color) => setBgColor(color.hex)}
-                width="100%"
-              />
-            </Box>
-          </Box>
         </CardContent>
       </Card>
     </Box>
