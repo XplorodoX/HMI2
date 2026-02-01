@@ -8,7 +8,7 @@ public class TextToSpeech : MonoBehaviour
 {
     public AudioSource audioSource;
     public AnimationController animator;
-    private string apiKey = "HbvCBTgTW2N6rywjz63NRwyoXOSCpcTdKPfHaSLH1uB45Vqt6kmX33";
+    private string apiKey = "";
     public string text = "The milestone Overture 2023-07-26-alpha.0 release includes four unique data layers...";
     public string voice = "Sierra";
 
